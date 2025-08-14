@@ -1,0 +1,44 @@
+Business Source License 1.1
+
+Parameters
+Licensor: Alex Sterin
+Licensed Work: Telegram bot for IP accounting (the "Work")
+Change Date: 2028-08-14
+Change License: Apache License 2.0
+
+Terms
+The Licensor hereby grants you the right to copy, modify, create derivative works,
+redistribute, and make non-production use of the Licensed Work. The foregoing rights
+are conditioned upon the following:
+
+1. Non-Commercial Use Limitation
+   You may use the Licensed Work only for non-commercial purposes.
+   Non-commercial purposes include use for personal, educational, research, testing,
+   prototyping, and demonstration purposes.  
+   “Commercial purposes” means use of the Licensed Work in a product, service, or
+   other venture that is intended for or directed toward commercial advantage or
+   monetary compensation.
+
+2. Termination
+   If you use the Licensed Work in violation of these terms, this license will
+   automatically terminate, and you must immediately cease all use of the Licensed Work.
+
+3. Change Date
+   On the Change Date, the Licensor will make the Licensed Work available under the
+   Change License, as published on or after the Change Date.
+
+4. No Warranty
+   THE LICENSED WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF, OR IN CONNECTION WITH THE LICENSED WORK OR THE USE OR OTHER
+   DEALINGS IN THE LICENSED WORK.
+
+5. Additional Terms
+   The Licensor reserves the right to offer separate commercial licensing terms
+   for the Licensed Work at any time.
+
+For more information about the Business Source License 1.1, see:
+https://mariadb.com/bsl11/
