@@ -3,18 +3,30 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
+	"log/slog"
 	"time"
 
+	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 	"github.com/tuor4eg/ip_accounting_bot/internal/telegram"
 )
 
+const (
+	codeTGStarted          = "tg_started"
+	codeTGGetMeFailed      = "tg_getme_failed"
+	codeTGGetUpdatesFailed = "tg_getupdates_failed"
+	codeTGSendFailed       = "tg_send_failed"
+)
+
 type TelegramRunner struct {
-	tg *telegram.Client
+	tg  *telegram.Client
+	log *slog.Logger
 }
 
 func NewTelegramRunner(tg *telegram.Client) *TelegramRunner {
-	return &TelegramRunner{tg: tg}
+	return &TelegramRunner{
+		tg:  tg,
+		log: logging.WithPackage(),
+	}
 }
 
 func (r *TelegramRunner) Name() string {
@@ -28,10 +40,11 @@ func (r *TelegramRunner) Run(ctx context.Context) error {
 	me, err := r.tg.GetMe(pingCtx)
 
 	if err != nil {
-		return fmt.Errorf("failed to get me: %w", err)
+		r.log.Error("failed to get me", "code", codeTGGetMeFailed, "error", err)
+		return err
 	}
 
-	fmt.Printf("telegram: bot @%s (id=%d) is running\n", me.Username, me.ID)
+	r.log.Info("bot started", "username", me.Username, "id", me.ID)
 
 	var offset int64
 
@@ -51,7 +64,9 @@ func (r *TelegramRunner) Run(ctx context.Context) error {
 
 		if err != nil {
 			if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
-				return fmt.Errorf("telegram: getUpdates error: %v\n", err)
+				r.log.Error("getUpdates error", "code", codeTGGetUpdatesFailed, "error", err)
+
+				return err
 			}
 
 			select {
@@ -81,7 +96,7 @@ func (r *TelegramRunner) Run(ctx context.Context) error {
 				cancel()
 
 				if sendErr != nil && ctx.Err() == nil {
-					fmt.Printf("telegram: failed to send message: %v\n", sendErr)
+					r.log.Error("failed to send message", "code", codeTGSendFailed, "error", sendErr)
 				}
 			}
 

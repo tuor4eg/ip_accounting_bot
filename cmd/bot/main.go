@@ -9,6 +9,7 @@ import (
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/app"
 	"github.com/tuor4eg/ip_accounting_bot/internal/config"
+	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 	"github.com/tuor4eg/ip_accounting_bot/internal/telegram"
 )
 
@@ -17,9 +18,12 @@ func main() {
 	defer stop()
 
 	cfg, err := config.Load()
+
 	if err != nil {
-		log.Fatalf("config: failed to load: %v", err)
+		panic(err)
 	}
+
+	logging.InitFromEnv(cfg.LogLevel, cfg.LogFormat)
 
 	a := app.New(cfg)
 

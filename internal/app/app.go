@@ -2,18 +2,23 @@ package app
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/config"
+	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 )
 
 type App struct {
 	cfg     *config.Config
 	runners []Runner
+	log     *slog.Logger
 }
 
 func New(cfg *config.Config) *App {
-	return &App{cfg: cfg}
+	return &App{
+		cfg: cfg,
+		log: logging.WithPackage(),
+	}
 }
 
 func (a *App) Register(runner Runner) {
@@ -21,8 +26,8 @@ func (a *App) Register(runner Runner) {
 }
 
 func (a *App) Run(ctx context.Context) error {
-	fmt.Println("IP Accounting Bot: starting...")
-	defer fmt.Println("IP Accounting Bot: stopped.")
+	a.log.Info("IP Accounting Bot: starting...")
+	defer a.log.Info("IP Accounting Bot: stopped.")
 
 	return runAll(ctx, a.runners)
 }
