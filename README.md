@@ -15,7 +15,7 @@
 
 ## Tech Stack
 - Go
-- PostgreSQL / SQLite (for initial setup)
+- PostgreSQL
 - Redis (cache and rate limiting)
 - Telegram Bot API
 
@@ -41,12 +41,17 @@ DATABASE_URL=postgres://user:password@localhost:5432/ip_accounting
 REDIS_URL=redis://localhost:6379
 ```
 
-### 4) Run the bot
+### 4) Run database migrations
+```bash
+go run ./cmd/migrate
+```
+
+### 5) Run the bot
 ```bash
 go run ./cmd/bot
 ```
 
-### 5) Build the binary
+### 6) Build the binary
 ```bash
 go build -o ip_bot ./cmd/bot
 ./ip_bot
@@ -57,37 +62,93 @@ go build -o ip_bot ./cmd/bot
 ```
 ip_accounting_bot/
 ├── cmd/
-│   └── bot/
-│       └── main.go              # Application entry point
+│   ├── bot/
+│   │   └── main.go              # Bot application entry point
+│   └── migrate/
+│       └── main.go              # Database migration entry point
 ├── internal/
 │   ├── app/
 │   │   ├── app.go               # Main application logic and runner management
 │   │   ├── runner.go            # Runner interface and concurrent execution
 │   │   └── telegram_runner.go   # Telegram bot runner implementation
+│   ├── bot/
+│   │   ├── handlers_help.go     # Help command handler
+│   │   ├── handlers_start.go    # Start command handler
+│   │   └── text.go              # Bot text messages and templates
 │   ├── config/
 │   │   └── config.go            # Configuration loading from environment
+│   ├── logging/
+│   │   ├── logging.go           # Logging configuration and setup
+│   │   └── pkglogging.go        # Package-level logging utilities
+│   ├── migrations/
+│   │   ├── embed.go             # SQL migrations embedding
+│   │   ├── lock.go              # Database migration locking mechanism
+│   │   ├── runner.go            # Migration execution logic
+│   │   └── sql/
+│   │       └── 0001_init.up.sql # Initial database schema
+│   ├── money/
+│   │   └── parse.go             # Money parsing utilities
+│   ├── period/
+│   │   └── quarter.go           # Quarter period calculations
+│   ├── service/
+│   │   └── income.go            # Income business logic service
+│   ├── storage/
+│   │   └── postgres/
+│   │       ├── base.go          # Base database connection and operations
+│   │       ├── identities.go    # User identity storage operations
+│   │       └── incomes.go       # Income data storage operations
 │   └── telegram/
 │       ├── client.go            # Telegram Bot API HTTP client
 │       ├── types.go             # Telegram API data structures
 │       └── updates.go           # Telegram API methods (getUpdates, sendMessage)
 ├── go.mod                       # Go module definition and dependencies
 ├── go.sum                       # Go module checksums
+├── CHANGELOG.md                 # Project changelog
 ├── LICENSE                      # Business Source License 1.1
 └── README.md                    # Project documentation
 ```
 
 ### File Descriptions
 
-- **`cmd/bot/main.go`** - Application entry point, initializes configuration, creates application and starts Telegram bot
+#### Command Line Applications
+- **`cmd/bot/main.go`** - Bot application entry point, initializes configuration, creates application and starts Telegram bot
+- **`cmd/migrate/main.go`** - Database migration application entry point
+
+#### Application Core
 - **`internal/app/app.go`** - Main application logic, manages registration and execution of various components (runners)
 - **`internal/app/runner.go`** - Runner interface and function for concurrent execution of all registered components
-- **`internal/app/telegram_runner.go`** - Telegram bot implementation, processes incoming messages and sends echo responses
+- **`internal/app/telegram_runner.go`** - Telegram bot implementation, processes incoming messages and sends responses
+
+#### Bot Handlers
+- **`internal/bot/handlers_help.go`** - Help command handler implementation
+- **`internal/bot/handlers_start.go`** - Start command handler implementation
+- **`internal/bot/text.go`** - Bot text messages, templates and localization
+
+#### Configuration & Logging
 - **`internal/config/config.go`** - Configuration loading from environment variables with .env file support
+- **`internal/logging/logging.go`** - Logging configuration and setup
+- **`internal/logging/pkglogging.go`** - Package-level logging utilities
+
+#### Database & Migrations
+- **`internal/migrations/embed.go`** - SQL migrations embedding for Go binary
+- **`internal/migrations/lock.go`** - Database migration locking mechanism to prevent concurrent migrations
+- **`internal/migrations/runner.go`** - Migration execution logic and version management
+- **`internal/migrations/sql/0001_init.up.sql`** - Initial database schema creation
+
+#### Business Logic
+- **`internal/money/parse.go`** - Money parsing utilities for handling currency amounts
+- **`internal/period/quarter.go`** - Quarter period calculations and date utilities
+- **`internal/service/income.go`** - Income business logic service layer
+
+#### Data Storage
+- **`internal/storage/postgres/base.go`** - Base database connection and common operations
+- **`internal/storage/postgres/identities.go`** - User identity storage operations
+- **`internal/storage/postgres/incomes.go`** - Income data storage operations
+
+#### Telegram Integration
 - **`internal/telegram/client.go`** - HTTP client for Telegram Bot API, includes error handling and JSON parsing
 - **`internal/telegram/types.go`** - Data structures for working with Telegram API (User, Chat, Message, Update)
 - **`internal/telegram/updates.go`** - Methods for getting updates and sending messages via Telegram Bot API
-- **`go.mod`** - Go module definition and dependencies (godotenv for .env file loading)
-- **`go.sum`** - Go module dependency checksums
 
 ## License
 This project is distributed under the [Business Source License 1.1](LICENSE) — free for non-commercial use; commercial use requires a separate agreement.

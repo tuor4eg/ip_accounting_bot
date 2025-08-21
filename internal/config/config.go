@@ -11,6 +11,7 @@ type Config struct {
 	TelegramToken string `env:"TELEGRAM_TOKEN"`
 	LogLevel      string `env:"LOG_LEVEL"`
 	LogFormat     string `env:"LOG_FORMAT"`
+	DatabaseURL   string `env:"DATABASE_URL"`
 }
 
 func Load() (*Config, error) {
@@ -32,6 +33,7 @@ func Load() (*Config, error) {
 		TelegramToken: os.Getenv("TELEGRAM_TOKEN"),
 		LogLevel:      logLevel,
 		LogFormat:     logFormat,
+		DatabaseURL:   os.Getenv("DATABASE_URL"),
 	}
 
 	if c.TelegramToken == "" {
