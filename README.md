@@ -14,7 +14,7 @@
 - CSV data export
 
 ## Tech Stack
-- Go
+- Go 1.24+
 - PostgreSQL
 - Redis (cache and rate limiting)
 - Telegram Bot API
@@ -28,7 +28,7 @@ cd ip_accounting_bot
 ```
 
 ### 2) Install dependencies
-Make sure you have **Go 1.21+** installed.
+Make sure you have **Go 1.24+** installed.
 ```bash
 go mod tidy
 ```
@@ -63,59 +63,65 @@ go build -o ip_bot ./cmd/bot
 ip_accounting_bot/
 ├── cmd/
 │   ├── bot/
-│   │   └── main.go              # Bot application entry point
+│   │   └── main.go                           # Bot application entry point
 │   └── migrate/
-│       └── main.go              # Database migration entry point
+│       └── main.go                           # Database migration entry point
 ├── internal/
 │   ├── app/
-│   │   ├── app.go               # Main application logic and runner management
-│   │   ├── handle_telegram_update.go # Telegram update processing logic
-│   │   ├── run_telegram_polling.go   # Telegram polling implementation
-│   │   ├── runner.go            # Runner interface and concurrent execution
-│   │   └── telegram_runner.go   # Telegram bot runner implementation
+│   │   ├── app.go                           # Main application logic and runner management
+│   │   ├── handle_telegram_update.go        # Telegram update processing logic
+│   │   ├── run_telegram_polling.go          # Telegram polling implementation
+│   │   ├── runner.go                        # Runner interface and concurrent execution
+│   │   ├── service.go                       # Service layer interface and implementation
+│   │   ├── store.go                         # Storage layer interface and implementation
+│   │   └── telegram_runner.go               # Telegram bot runner implementation
 │   ├── bot/
-│   │   ├── handlers_add.go      # Add income command handler
-│   │   ├── handlers_help.go     # Help command handler
-│   │   ├── handlers_start.go    # Start command handler
-│   │   ├── handlers_total.go    # Total income command handler
-│   │   ├── parse.go             # Message parsing utilities
-│   │   ├── router_dispatch.go   # Message routing and dispatch logic
-│   │   └── text.go              # Bot text messages and templates
+│   │   ├── handlers_add.go                  # Add income command handler
+│   │   ├── handlers_help.go                 # Help command handler
+│   │   ├── handlers_start.go                # Start command handler
+│   │   ├── handlers_total.go                # Total income command handler
+│   │   ├── parse.go                         # Message parsing utilities
+│   │   ├── router_dispatch.go               # Message routing and dispatch logic
+│   │   └── text.go                          # Bot text messages and templates
 │   ├── config/
-│   │   └── config.go            # Configuration loading from environment
+│   │   └── config.go                        # Configuration loading from environment
 │   ├── logging/
-│   │   ├── logging.go           # Logging configuration and setup
-│   │   └── pkglogging.go        # Package-level logging utilities
+│   │   ├── logging.go                       # Logging configuration and setup
+│   │   └── pkglogging.go                    # Package-level logging utilities
 │   ├── migrations/
-│   │   ├── embed.go             # SQL migrations embedding
-│   │   ├── lock.go              # Database migration locking mechanism
-│   │   ├── runner.go            # Migration execution logic
+│   │   ├── embed.go                         # SQL migrations embedding
+│   │   ├── lock.go                          # Database migration locking mechanism
+│   │   ├── runner.go                        # Migration execution logic
 │   │   └── sql/
-│   │       └── 0001_init.up.sql # Initial database schema
+│   │       └── 0001_init.up.sql             # Initial database schema
 │   ├── money/
-│   │   ├── format.go            # Money formatting utilities
-│   │   └── parse.go             # Money parsing utilities
+│   │   ├── format.go                        # Money formatting utilities
+│   │   └── parse.go                         # Money parsing utilities
 │   ├── period/
-│   │   └── quarter.go           # Quarter period calculations
+│   │   └── quarter.go                       # Quarter period calculations
 │   ├── service/
-│   │   └── income.go            # Income business logic service
+│   │   └── income.go                        # Income business logic service
 │   ├── storage/
 │   │   └── postgres/
-│   │       ├── base.go          # Base database connection and operations
-│   │       ├── identities.go    # User identity storage operations
-│   │       └── incomes.go       # Income data storage operations
+│   │       ├── base.go                      # Base database connection and operations
+│   │       ├── identities.go                # User identity storage operations
+│   │       └── incomes.go                   # Income data storage operations
 │   └── telegram/
-│       ├── client.go            # Telegram Bot API HTTP client
-│       ├── types.go             # Telegram API data structures
-│       └── updates.go           # Telegram API methods (getUpdates, sendMessage)
-├── go.mod                       # Go module definition and dependencies
-├── go.sum                       # Go module checksums
-├── CHANGELOG.md                 # Project changelog
-├── LICENSE                      # Business Source License 1.1
-└── README.md                    # Project documentation
+│       ├── client.go                        # Telegram Bot API HTTP client
+│       ├── types.go                         # Telegram API data structures
+│       └── updates.go                       # Telegram API methods (getUpdates, sendMessage)
+├── go.mod                                   # Go module definition and dependencies
+├── go.sum                                   # Go module checksums
+├── .gitignore                               # Git ignore rules
+├── CHANGELOG.md                             # Project changelog
+├── LICENSE                                  # Business Source License 1.1
+└── README.md                                # Project documentation
 ```
 
 ### File Descriptions
+
+#### Project Files
+- **`.gitignore`** - Git ignore rules for Go projects, excludes binaries, test files, coverage reports, and environment files
 
 #### Command Line Applications
 - **`cmd/bot/main.go`** - Bot application entry point, initializes configuration, creates application and starts Telegram bot
@@ -126,6 +132,8 @@ ip_accounting_bot/
 - **`internal/app/handle_telegram_update.go`** - Telegram update processing logic and message handling
 - **`internal/app/run_telegram_polling.go`** - Telegram polling implementation for receiving updates
 - **`internal/app/runner.go`** - Runner interface and function for concurrent execution of all registered components
+- **`internal/app/service.go`** - Service layer interface and implementation for business logic
+- **`internal/app/store.go`** - Storage layer interface and implementation for data persistence
 - **`internal/app/telegram_runner.go`** - Telegram bot implementation, processes incoming messages and sends responses
 
 #### Bot Handlers
