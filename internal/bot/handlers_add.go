@@ -29,7 +29,7 @@ func HandleAdd(ctx context.Context, deps AddDeps, transport, externalID string, 
 	args = strings.TrimSpace(args)
 
 	if args == "" {
-		return "", fmt.Errorf("%s: no arguments provided", op)
+		return "", fmt.Errorf("%s: no arguments provided: %w", op, ErrBadInput)
 	}
 
 	toks := strings.Fields(args)
@@ -48,7 +48,7 @@ func HandleAdd(ctx context.Context, deps AddDeps, transport, externalID string, 
 		}
 	}
 	if cut == -1 {
-		return "", fmt.Errorf("%s: parse amount", op)
+		return "", fmt.Errorf("%s: parse amount: %w", op, ErrBadInput)
 	}
 	note := strings.TrimSpace(strings.Join(toks[cut:], " "))
 
@@ -70,16 +70,5 @@ func HandleAdd(ctx context.Context, deps AddDeps, transport, externalID string, 
 		return "", fmt.Errorf("%s: add income: %w", op, err)
 	}
 
-	// Deterministic template reply (no AI).
-	var b strings.Builder
-	b.WriteString("Добавлено: ")
-	b.WriteString(money.FormatAmountShort(amount))
-	b.WriteString("\nДата: ")
-	b.WriteString(at.Format("2006-01-02"))
-	if note != "" {
-		b.WriteString("\nКомментарий: ")
-		b.WriteString(note)
-	}
-
-	return b.String(), nil
+	return AddSuccessText(amount, at, note), nil
 }

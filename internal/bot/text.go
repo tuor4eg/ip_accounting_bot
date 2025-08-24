@@ -1,5 +1,12 @@
 package bot
 
+import (
+	"strings"
+	"time"
+
+	"github.com/tuor4eg/ip_accounting_bot/internal/money"
+)
+
 // StartText returns the greeting and quick usage guide for the bot.
 // Text is static and transport-agnostic; actual sending is done by the router/runner.
 func StartText() string {
@@ -42,7 +49,49 @@ func HelpText() string {
 		"  • Отрицательные значения не принимаются.\n" +
 		"\n" +
 		"Механика:\n" +
-		"  • Деньги храним в копейках (int64), без float.\n" +
 		"  • Налог рассчитывается как 6% от суммы квартала (округление вниз).\n" +
 		"  • Квартал определяется по UTC датам (включительно).\n"
+}
+
+// BadAmountHintText returns a short hint for invalid /add amount input.
+func BadAmountHintText() string {
+	return "Не понял сумму. Примеры: 1000 | 1 234,56 | 10р 50к"
+}
+
+func UnknownCommandText() string {
+	return "Неизвестная команда. Напишите /help"
+}
+
+func ErrorText() string {
+	return "Ошибка при обработке команды. Попробуйте позже."
+}
+
+func AddSuccessText(amount int64, at time.Time, note string) string {
+	// Deterministic template reply (no AI).
+	var b strings.Builder
+	b.WriteString("Добавлено: ")
+	b.WriteString(money.FormatAmountShort(amount))
+	b.WriteString("\nДата: ")
+	b.WriteString(at.Format("2006-01-02"))
+	if note != "" {
+		b.WriteString("\nКомментарий: ")
+		b.WriteString(note)
+	}
+
+	return b.String()
+}
+
+func TotalText(sum int64, tax int64, qStart time.Time, qEnd time.Time) string {
+
+	var b strings.Builder
+	b.WriteString("Сумма за квартал: ")
+	b.WriteString(qStart.Format("2006-01-02"))
+	b.WriteString(" - ")
+	b.WriteString(qEnd.Format("2006-01-02"))
+	b.WriteString("\nСумма: ")
+	b.WriteString(money.FormatAmountShort(sum))
+	b.WriteString("\nНалог: ")
+	b.WriteString(money.FormatAmountShort(tax))
+
+	return b.String()
 }

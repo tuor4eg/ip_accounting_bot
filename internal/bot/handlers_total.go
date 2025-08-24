@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/tuor4eg/ip_accounting_bot/internal/money"
 )
 
 type QuarterSummer interface {
@@ -46,15 +44,5 @@ func HandleTotal(ctx context.Context, deps TotalDeps, transport, externalID, arg
 		return "", fmt.Errorf("%s: sum quarter: %w", op, err)
 	}
 
-	var b strings.Builder
-	b.WriteString("Сумма за квартал: ")
-	b.WriteString(qStart.Format("2006-01-02"))
-	b.WriteString(" - ")
-	b.WriteString(qEnd.Format("2006-01-02"))
-	b.WriteString("\nСумма: ")
-	b.WriteString(money.FormatAmountShort(sum))
-	b.WriteString("\nНалог: ")
-	b.WriteString(money.FormatAmountShort(tax))
-
-	return b.String(), nil
+	return TotalText(sum, tax, qStart, qEnd), nil
 }

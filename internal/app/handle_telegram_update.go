@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -51,14 +52,22 @@ func HandleTelegramUpdate(
 	}
 
 	if err != nil {
-		if strings.Contains(err.Error(), "unknown command") {
-			if sendErr := sender.SendMessage(ctx, chatID, "Неизвестная команда. Напишите /help"); sendErr != nil {
+		if errors.Is(err, bot.ErrBadInput) {
+			if sendErr := sender.SendMessage(ctx, chatID, bot.BadAmountHintText()); sendErr != nil {
 				return fmt.Errorf("%s: send message: %w", op, sendErr)
 			}
 
 			return nil
 		}
-		if sendErr := sender.SendMessage(ctx, chatID, "Ошибка при обработке команды. Попробуйте позже."); sendErr != nil {
+
+		if strings.Contains(err.Error(), "unknown command") {
+			if sendErr := sender.SendMessage(ctx, chatID, bot.UnknownCommandText()); sendErr != nil {
+				return fmt.Errorf("%s: send message: %w", op, sendErr)
+			}
+
+			return nil
+		}
+		if sendErr := sender.SendMessage(ctx, chatID, bot.ErrorText()); sendErr != nil {
 			return fmt.Errorf("%s: send message: %w", op, sendErr)
 		}
 

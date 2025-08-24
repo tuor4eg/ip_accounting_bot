@@ -42,6 +42,7 @@ func main() {
 	}()
 
 	income := service.NewIncomeService(store)
+
 	a.SetStore(store).SetIncomeUsecase(income)
 
 	tg := telegram.New(cfg.TelegramToken, nil)
