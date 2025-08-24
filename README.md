@@ -23,7 +23,7 @@
 
 ### 1) Clone the repository
 ```bash
-git clone https://github.com/your-username/ip_accounting_bot.git
+git clone https://github.com/tuor4eg/ip_accounting_bot.git
 cd ip_accounting_bot
 ```
 
