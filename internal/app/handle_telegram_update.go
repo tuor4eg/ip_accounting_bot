@@ -48,6 +48,10 @@ func HandleTelegramUpdate(
 	reply, handled, err := bot.DispatchCommand(ctx, text, self, "telegram", externalID, addDeps, totalDeps)
 
 	if !handled {
+		if sendErr := sender.SendMessage(ctx, chatID, bot.UnknownCommandText()); sendErr != nil {
+			return fmt.Errorf("%s: send: %w", op, sendErr)
+		}
+
 		return nil
 	}
 
