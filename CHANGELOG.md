@@ -8,15 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial project setup
-- PostgreSQL storage implementation
-- Telegram bot client
-- Configuration management
-- Logging system
-- Database migration system
-- Database entities
-- Amount layer
-- Money service
 
 ### Changed
 
@@ -34,3 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release
 - Basic project structure
 - Core dependencies setup
+- Initial project setup
+- PostgreSQL storage implementation
+- Telegram bot client
+- Configuration management
+- Logging system
+- Database migration system
+- Database entities
+- Amount layer
+- Money service
+- Telegram handlers
+- App first build

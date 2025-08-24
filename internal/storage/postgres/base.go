@@ -39,12 +39,13 @@ func Open(ctx context.Context, dsn string) (*Store, error) {
 	return &Store{Pool: pool}, nil
 }
 
-func (s *Store) Close() {
+func (s *Store) Close(ctx context.Context) error {
 	if s == nil || s.Pool == nil {
-		return
+		return nil
 	}
 
 	s.Pool.Close()
+	return nil
 }
 
 func (s *Store) WithTx(ctx context.Context, fn func(ctx context.Context, tx pgx.Tx) error) error {

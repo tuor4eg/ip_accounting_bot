@@ -6,31 +6,57 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
 	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 	"github.com/tuor4eg/ip_accounting_bot/internal/telegram"
 )
 
 const (
-	codeTGStarted          = "tg_started"
-	codeTGGetMeFailed      = "tg_getme_failed"
-	codeTGGetUpdatesFailed = "tg_getupdates_failed"
-	codeTGSendFailed       = "tg_send_failed"
+	codeTGStarted            = "tg_started"
+	codeTGGetMeFailed        = "tg_getme_failed"
+	codeTGGetUpdatesFailed   = "tg_getupdates_failed"
+	codeTGSendFailed         = "tg_send_failed"
+	codeTGHandleUpdateFailed = "tg_handle_update_failed"
 )
 
 type TelegramRunner struct {
-	tg  *telegram.Client
-	log *slog.Logger
+	tg        *telegram.Client
+	log       *slog.Logger
+	addDeps   bot.AddDeps
+	totalDeps bot.TotalDeps
 }
 
 func NewTelegramRunner(tg *telegram.Client) *TelegramRunner {
-	return &TelegramRunner{
+	tgRunner := &TelegramRunner{
 		tg:  tg,
 		log: logging.WithPackage(),
 	}
+
+	return tgRunner.SetBotDeps(bot.AddDeps{}, bot.TotalDeps{})
 }
 
 func (r *TelegramRunner) Name() string {
 	return "telegram"
+}
+
+// SetBotDeps injects bot dependencies into the TelegramRunner and returns the runner for chaining.
+func (r *TelegramRunner) SetBotDeps(add bot.AddDeps, total bot.TotalDeps) *TelegramRunner {
+	r.addDeps = add
+	r.totalDeps = total
+
+	return r
+}
+
+func (r *TelegramRunner) SendMessage(ctx context.Context, chatID int64, text string) error {
+	sentCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	_, err := r.tg.SendMessage(sentCtx, telegram.SendMessageParams{
+		ChatID: chatID,
+		Text:   text,
+	})
+
+	return err
 }
 
 func (r *TelegramRunner) Run(ctx context.Context) error {
@@ -44,7 +70,9 @@ func (r *TelegramRunner) Run(ctx context.Context) error {
 		return err
 	}
 
-	r.log.Info("bot started", "username", me.Username, "id", me.ID)
+	self := NormalizeSelf(me.Username)
+
+	r.log.Info("bot started", "username", self, "id", me.ID)
 
 	var offset int64
 
@@ -82,22 +110,8 @@ func (r *TelegramRunner) Run(ctx context.Context) error {
 		}
 
 		for _, u := range updates {
-			if u.Message != nil && u.Message.Text != "" {
-				msg := u.Message
-
-				sentCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-
-				_, sendErr := r.tg.SendMessage(sentCtx, telegram.SendMessageParams{
-					ChatID:           msg.Chat.ID,
-					Text:             msg.Text,
-					ReplyToMessageID: msg.MessageID,
-				})
-
-				cancel()
-
-				if sendErr != nil && ctx.Err() == nil {
-					r.log.Error("failed to send message", "code", codeTGSendFailed, "error", sendErr)
-				}
+			if err := HandleTelegramUpdate(ctx, self, u, r, r.addDeps, r.totalDeps); err != nil {
+				r.log.Error("handle telegram update", "code", codeTGHandleUpdateFailed, "error", err)
 			}
 
 			if u.UpdateID >= offset {

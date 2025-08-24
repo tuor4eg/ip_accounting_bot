@@ -1,0 +1,46 @@
+package bot
+
+import (
+	"context"
+	"fmt"
+)
+
+func DispatchCommand(
+	ctx context.Context,
+	text string,
+	self string,
+	transport string,
+	externalID string,
+	addDeps AddDeps,
+	totalDeps TotalDeps,
+) (reply string, handled bool, err error) {
+	const op = "bot.DispatchCommand"
+
+	cmd, args, ok := ParseSlashCommand(text, self)
+	if !ok {
+		// Not a slash-command (or addressed to another bot)
+		return "", false, nil
+	}
+
+	switch cmd {
+	case "start":
+		return HandleStart(ctx), true, nil
+	case "help":
+		return HandleHelp(ctx), true, nil
+	case "add":
+		reply, err := HandleAdd(ctx, addDeps, transport, externalID, args)
+		if err != nil {
+			return "", true, fmt.Errorf("%s: add: %w", op, err)
+		}
+		return reply, true, nil
+	case "total":
+		reply, err := HandleTotal(ctx, totalDeps, transport, externalID, args)
+		if err != nil {
+			return "", true, fmt.Errorf("%s: total: %w", op, err)
+		}
+		return reply, true, nil
+	default:
+		// Unknown command: handled=true
+		return "", true, fmt.Errorf("%s: unknown command: %s", op, cmd)
+	}
+}

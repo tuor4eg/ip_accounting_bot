@@ -69,11 +69,17 @@ ip_accounting_bot/
 ├── internal/
 │   ├── app/
 │   │   ├── app.go               # Main application logic and runner management
+│   │   ├── handle_telegram_update.go # Telegram update processing logic
+│   │   ├── run_telegram_polling.go   # Telegram polling implementation
 │   │   ├── runner.go            # Runner interface and concurrent execution
 │   │   └── telegram_runner.go   # Telegram bot runner implementation
 │   ├── bot/
+│   │   ├── handlers_add.go      # Add income command handler
 │   │   ├── handlers_help.go     # Help command handler
 │   │   ├── handlers_start.go    # Start command handler
+│   │   ├── handlers_total.go    # Total income command handler
+│   │   ├── parse.go             # Message parsing utilities
+│   │   ├── router_dispatch.go   # Message routing and dispatch logic
 │   │   └── text.go              # Bot text messages and templates
 │   ├── config/
 │   │   └── config.go            # Configuration loading from environment
@@ -87,6 +93,7 @@ ip_accounting_bot/
 │   │   └── sql/
 │   │       └── 0001_init.up.sql # Initial database schema
 │   ├── money/
+│   │   ├── format.go            # Money formatting utilities
 │   │   └── parse.go             # Money parsing utilities
 │   ├── period/
 │   │   └── quarter.go           # Quarter period calculations
@@ -116,12 +123,18 @@ ip_accounting_bot/
 
 #### Application Core
 - **`internal/app/app.go`** - Main application logic, manages registration and execution of various components (runners)
+- **`internal/app/handle_telegram_update.go`** - Telegram update processing logic and message handling
+- **`internal/app/run_telegram_polling.go`** - Telegram polling implementation for receiving updates
 - **`internal/app/runner.go`** - Runner interface and function for concurrent execution of all registered components
 - **`internal/app/telegram_runner.go`** - Telegram bot implementation, processes incoming messages and sends responses
 
 #### Bot Handlers
+- **`internal/bot/handlers_add.go`** - Add income command handler implementation
 - **`internal/bot/handlers_help.go`** - Help command handler implementation
 - **`internal/bot/handlers_start.go`** - Start command handler implementation
+- **`internal/bot/handlers_total.go`** - Total income command handler implementation
+- **`internal/bot/parse.go`** - Message parsing utilities for extracting commands and parameters
+- **`internal/bot/router_dispatch.go`** - Message routing and dispatch logic to appropriate handlers
 - **`internal/bot/text.go`** - Bot text messages, templates and localization
 
 #### Configuration & Logging
@@ -136,6 +149,7 @@ ip_accounting_bot/
 - **`internal/migrations/sql/0001_init.up.sql`** - Initial database schema creation
 
 #### Business Logic
+- **`internal/money/format.go`** - Money formatting utilities for displaying currency amounts
 - **`internal/money/parse.go`** - Money parsing utilities for handling currency amounts
 - **`internal/period/quarter.go`** - Quarter period calculations and date utilities
 - **`internal/service/income.go`** - Income business logic service layer
