@@ -7,6 +7,17 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/money"
 )
 
+// ------------------ COMMON MESSAGES ------------------
+func UnknownCommandText() string {
+	return "Неизвестная команда. Напишите /help"
+}
+
+func ErrorText() string {
+	return "Ошибка при обработке команды. Попробуйте позже."
+}
+
+// ------------------ START MESSAGE ------------------
+
 // StartText returns the greeting and quick usage guide for the bot.
 // Text is static and transport-agnostic; actual sending is done by the router/runner.
 func StartText() string {
@@ -18,9 +29,12 @@ func StartText() string {
 		"           /add 1 234,56 заказ #42\n" +
 		"           /add 10р 50к аванс\n" +
 		"• /total — итоги за текущий квартал (сумма и налог 6%)\n" +
+		"• /undo — отменить последнее поступление за квартал\n" +
 		"• /help — подробная справка\n\n" +
-		"Формат суммы: без знака минус, поддерживаются «1 234,56», «1234.56», «10р 50к». Деньги считаем детерминированно в копейках."
+		"Формат суммы: без знака минус, поддерживаются «1 234,56», «1234.56», «10р 50к»."
 }
+
+// ------------------ HELP MESSAGE ------------------
 
 // HelpText returns a longer help message for users.
 // Text is static and transport-agnostic.
@@ -35,6 +49,9 @@ func HelpText() string {
 		"   /add 1000\n" +
 		"   /add 1 234,56 заказ #42\n" +
 		"   /add 10р 50к аванс\n" +
+		"\n" +
+		"• /undo\n" +
+		"  Отменяет последнее поступление за квартал.\n" +
 		"\n" +
 		"• /total\n" +
 		"  Показывает сумму доходов и налог 6% за текущий квартал.\n" +
@@ -53,23 +70,21 @@ func HelpText() string {
 		"  • Квартал определяется по UTC датам (включительно).\n"
 }
 
+// ------------------ ADD MESSAGE ------------------
+
 // BadAmountHintText returns a short hint for invalid /add amount input.
 func BadAmountHintText() string {
 	return "Не понял сумму. Примеры: 1000 | 1 234,56 | 10р 50к"
 }
 
-func UnknownCommandText() string {
-	return "Неизвестная команда. Напишите /help"
-}
-
-func ErrorText() string {
-	return "Ошибка при обработке команды. Попробуйте позже."
+func AmountIsZeroText() string {
+	return "Сумма не может быть 0"
 }
 
 func AddSuccessText(amount int64, at time.Time, note string) string {
 	// Deterministic template reply (no AI).
 	var b strings.Builder
-	b.WriteString("Добавлено: ")
+	b.WriteString("✅ Добавлено: ")
 	b.WriteString(money.FormatAmountShort(amount))
 	b.WriteString("\nДата: ")
 	b.WriteString(at.Format("2006-01-02"))
@@ -80,6 +95,8 @@ func AddSuccessText(amount int64, at time.Time, note string) string {
 
 	return b.String()
 }
+
+// ------------------ TOTAL MESSAGE ------------------
 
 func TotalText(sum int64, tax int64, qStart time.Time, qEnd time.Time) string {
 
@@ -94,4 +111,24 @@ func TotalText(sum int64, tax int64, qStart time.Time, qEnd time.Time) string {
 	b.WriteString(money.FormatAmountShort(tax))
 
 	return b.String()
+}
+
+// ------------------ UNDO MESSAGE ------------------
+
+func UndoSuccessText(amount int64, at time.Time, note string) string {
+	var b strings.Builder
+	b.WriteString("✅ Поступление отменено:\n")
+	b.WriteString("\tСумма: ")
+	b.WriteString(money.FormatAmountShort(amount))
+	b.WriteString("\n\tДата: ")
+	b.WriteString(at.Format("2006-01-02"))
+	if note != "" {
+		b.WriteString("\n\tКомментарий: ")
+		b.WriteString(note)
+	}
+	return b.String()
+}
+
+func UndoNoIncomeText() string {
+	return "Нечего отменять. Нет поступлений за текущий квартал."
 }

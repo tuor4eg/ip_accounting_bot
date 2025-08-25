@@ -64,6 +64,14 @@ func HandleTelegramUpdate(
 			return nil
 		}
 
+		if errors.Is(err, bot.ErrAmountIsZero) {
+			if sendErr := sender.SendMessage(ctx, chatID, bot.AmountIsZeroText()); sendErr != nil {
+				return fmt.Errorf("%s: send message: %w", op, sendErr)
+			}
+
+			return nil
+		}
+
 		if strings.Contains(err.Error(), "unknown command") {
 			if sendErr := sender.SendMessage(ctx, chatID, bot.UnknownCommandText()); sendErr != nil {
 				return fmt.Errorf("%s: send message: %w", op, sendErr)

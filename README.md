@@ -76,15 +76,19 @@ ip_accounting_bot/
 │   │   ├── store.go                         # Storage layer interface and implementation
 │   │   └── telegram_runner.go               # Telegram bot runner implementation
 │   ├── bot/
+│   │   ├── errors.go                        # Bot error handling and custom errors
 │   │   ├── handlers_add.go                  # Add income command handler
 │   │   ├── handlers_help.go                 # Help command handler
 │   │   ├── handlers_start.go                # Start command handler
 │   │   ├── handlers_total.go                # Total income command handler
+│   │   ├── handlers_undo.go                 # Undo last action command handler
 │   │   ├── parse.go                         # Message parsing utilities
 │   │   ├── router_dispatch.go               # Message routing and dispatch logic
 │   │   └── text.go                          # Bot text messages and templates
 │   ├── config/
 │   │   └── config.go                        # Configuration loading from environment
+│   ├── helper/
+│   │   └── helper_time.go                   # Time utility functions
 │   ├── logging/
 │   │   ├── logging.go                       # Logging configuration and setup
 │   │   └── pkglogging.go                    # Package-level logging utilities
@@ -96,12 +100,19 @@ ip_accounting_bot/
 │   │       └── 0001_init.up.sql             # Initial database schema
 │   ├── money/
 │   │   ├── format.go                        # Money formatting utilities
-│   │   └── parse.go                         # Money parsing utilities
+│   │   ├── format_test.go                   # Money formatting tests
+│   │   ├── parse.go                         # Money parsing utilities
+│   │   └── parse_test.go                    # Money parsing tests
 │   ├── period/
-│   │   └── quarter.go                       # Quarter period calculations
+│   │   ├── quarter.go                       # Quarter period calculations
+│   │   └── quarter_test.go                  # Quarter period tests
 │   ├── service/
 │   │   └── income.go                        # Income business logic service
 │   ├── storage/
+│   │   ├── memstore/
+│   │   │   ├── base.go                      # In-memory storage base implementation
+│   │   │   ├── identities.go                # In-memory user identity storage
+│   │   │   └── incomes.go                   # In-memory income data storage
 │   │   └── postgres/
 │   │       ├── base.go                      # Base database connection and operations
 │   │       ├── identities.go                # User identity storage operations
@@ -137,16 +148,21 @@ ip_accounting_bot/
 - **`internal/app/telegram_runner.go`** - Telegram bot implementation, processes incoming messages and sends responses
 
 #### Bot Handlers
+- **`internal/bot/errors.go`** - Bot error handling, custom error types and error management
 - **`internal/bot/handlers_add.go`** - Add income command handler implementation
 - **`internal/bot/handlers_help.go`** - Help command handler implementation
 - **`internal/bot/handlers_start.go`** - Start command handler implementation
 - **`internal/bot/handlers_total.go`** - Total income command handler implementation
+- **`internal/bot/handlers_undo.go`** - Undo last action command handler implementation
 - **`internal/bot/parse.go`** - Message parsing utilities for extracting commands and parameters
 - **`internal/bot/router_dispatch.go`** - Message routing and dispatch logic to appropriate handlers
 - **`internal/bot/text.go`** - Bot text messages, templates and localization
 
-#### Configuration & Logging
+#### Configuration & Utilities
 - **`internal/config/config.go`** - Configuration loading from environment variables with .env file support
+- **`internal/helper/helper_time.go`** - Time utility functions and date manipulation helpers
+
+#### Logging
 - **`internal/logging/logging.go`** - Logging configuration and setup
 - **`internal/logging/pkglogging.go`** - Package-level logging utilities
 
@@ -158,11 +174,17 @@ ip_accounting_bot/
 
 #### Business Logic
 - **`internal/money/format.go`** - Money formatting utilities for displaying currency amounts
+- **`internal/money/format_test.go`** - Tests for money formatting utilities
 - **`internal/money/parse.go`** - Money parsing utilities for handling currency amounts
+- **`internal/money/parse_test.go`** - Tests for money parsing utilities
 - **`internal/period/quarter.go`** - Quarter period calculations and date utilities
+- **`internal/period/quarter_test.go`** - Tests for quarter period calculations
 - **`internal/service/income.go`** - Income business logic service layer
 
 #### Data Storage
+- **`internal/storage/memstore/base.go`** - In-memory storage base implementation for development/testing
+- **`internal/storage/memstore/identities.go`** - In-memory user identity storage operations
+- **`internal/storage/memstore/incomes.go`** - In-memory income data storage operations
 - **`internal/storage/postgres/base.go`** - Base database connection and common operations
 - **`internal/storage/postgres/identities.go`** - User identity storage operations
 - **`internal/storage/postgres/incomes.go`** - Income data storage operations

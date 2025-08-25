@@ -33,6 +33,12 @@ func DispatchCommand(
 			return "", true, fmt.Errorf("%s: add: %w", op, err)
 		}
 		return reply, true, nil
+	case "undo":
+		reply, err := HandleUndo(ctx, addDeps, transport, externalID, args)
+		if err != nil {
+			return "", true, fmt.Errorf("%s: undo: %w", op, err)
+		}
+		return reply, true, nil
 	case "total":
 		reply, err := HandleTotal(ctx, totalDeps, transport, externalID, args)
 		if err != nil {
