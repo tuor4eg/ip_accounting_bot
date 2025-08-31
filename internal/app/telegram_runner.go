@@ -48,7 +48,7 @@ func (r *TelegramRunner) SetBotDeps(add bot.AddDeps, total bot.TotalDeps) *Teleg
 }
 
 func (r *TelegramRunner) SendMessage(ctx context.Context, chatID int64, text string) error {
-	sentCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	sentCtx, cancel := context.WithTimeout(ctx, tgSendTimeout)
 	defer cancel()
 
 	_, err := r.tg.SendMessage(sentCtx, telegram.SendMessageParams{
@@ -60,7 +60,7 @@ func (r *TelegramRunner) SendMessage(ctx context.Context, chatID int64, text str
 }
 
 func (r *TelegramRunner) Run(ctx context.Context) error {
-	pingCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	pingCtx, cancel := context.WithTimeout(ctx, tgPingTimeout)
 	defer cancel()
 
 	me, err := r.tg.GetMe(pingCtx)
@@ -81,7 +81,7 @@ func (r *TelegramRunner) Run(ctx context.Context) error {
 			return nil
 		}
 
-		callCtx, cancel := context.WithTimeout(ctx, 35*time.Second)
+		callCtx, cancel := context.WithTimeout(ctx, tgPollReqTimeout)
 
 		updates, err := r.tg.GetUpdates(callCtx, telegram.GetUpdatesParams{
 			Offset:         offset,

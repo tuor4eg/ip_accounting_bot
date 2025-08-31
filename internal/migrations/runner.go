@@ -2,7 +2,7 @@ package migrations
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io/fs"
 	"path/filepath"
 	"regexp"
@@ -11,9 +11,15 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 var reMigration = regexp.MustCompile(`^(?P<ver>\d{4,})_(?P<name>[a-z0-9_]+?)(?P<conc>_concurrently)?\.up\.sql$`)
+
+var (
+	ErrInvalidFS                 = errors.New("fs is nil")
+	ErrDuplicateMigrationVersion = errors.New("duplicate migration version")
+)
 
 type Migration struct {
 	Version    int64
@@ -23,14 +29,16 @@ type Migration struct {
 }
 
 func EnsureMigrationsTable(ctx context.Context, pool *pgxpool.Pool) error {
+	const op = "migrations.EnsureMigrationsTable"
+
 	if pool == nil {
-		return fmt.Errorf("pool is nil")
+		return validate.Wrap(op, ErrInvalidPool)
 	}
 
 	tx, err := pool.Begin(ctx)
 
 	if err != nil {
-		return fmt.Errorf("begin transaction: %w", err)
+		return validate.Wrap(op, err)
 	}
 
 	defer func() { _ = tx.Rollback(ctx) }()
@@ -41,19 +49,21 @@ func EnsureMigrationsTable(ctx context.Context, pool *pgxpool.Pool) error {
 			applied_at TIMESTAMP NOT NULL DEFAULT NOW()
 		);
 	`); err != nil {
-		return fmt.Errorf("create schema_migrations table: %w", err)
+		return validate.Wrap(op, err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("commit transaction: %w", err)
+		return validate.Wrap(op, err)
 	}
 
 	return nil
 }
 
 func AppliedVersions(ctx context.Context, pool *pgxpool.Pool) ([]int64, error) {
+	const op = "migrations.AppliedVersions"
+
 	if pool == nil {
-		return nil, fmt.Errorf("pool is nil")
+		return nil, validate.Wrap(op, ErrInvalidPool)
 	}
 
 	rows, err := pool.Query(ctx, `
@@ -62,7 +72,7 @@ func AppliedVersions(ctx context.Context, pool *pgxpool.Pool) ([]int64, error) {
 	`)
 
 	if err != nil {
-		return nil, fmt.Errorf("query schema_migrations: %w", err)
+		return nil, validate.Wrap(op, err)
 	}
 
 	defer rows.Close()
@@ -73,28 +83,30 @@ func AppliedVersions(ctx context.Context, pool *pgxpool.Pool) ([]int64, error) {
 		var v int64
 
 		if err := rows.Scan(&v); err != nil {
-			return nil, fmt.Errorf("scan version: %w", err)
+			return nil, validate.Wrap(op, err)
 		}
 
 		vs = append(vs, v)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows error: %w", err)
+		return nil, validate.Wrap(op, err)
 	}
 
 	return vs, nil
 }
 
 func ListUpMigrations(fsys fs.FS, dir string) ([]Migration, error) {
+	const op = "migrations.ListUpMigrations"
+
 	if fsys == nil {
-		return nil, fmt.Errorf("fsys is nil")
+		return nil, validate.Wrap(op, ErrInvalidFS)
 	}
 
 	entries, err := fs.ReadDir(fsys, dir)
 
 	if err != nil {
-		return nil, fmt.Errorf("read dir: %w", err)
+		return nil, validate.Wrap(op, err)
 	}
 
 	var out []Migration
@@ -113,8 +125,8 @@ func ListUpMigrations(fsys fs.FS, dir string) ([]Migration, error) {
 			continue
 		}
 
-		if prev, dup := seen[v]; dup {
-			return nil, fmt.Errorf("duplicate migration version %d: %q and %q", v, prev, name)
+		if _, dup := seen[v]; dup {
+			return nil, validate.Wrap(op, ErrDuplicateMigrationVersion)
 		}
 
 		seen[v] = name
@@ -135,33 +147,35 @@ func ListUpMigrations(fsys fs.FS, dir string) ([]Migration, error) {
 }
 
 func ApplyUp(ctx context.Context, pool *pgxpool.Pool, fsys fs.FS, dir string) (int, error) {
+	const op = "migrations.ApplyUp"
+
 	if pool == nil {
-		return 0, fmt.Errorf("apply up: nil pool")
+		return 0, validate.Wrap(op, ErrInvalidPool)
 	}
 	if fsys == nil {
-		return 0, fmt.Errorf("apply up: nil fs")
+		return 0, validate.Wrap(op, ErrInvalidFS)
 	}
 
 	// 1) Serialization of migrations (global lock).
 	unlock, err := AcquireAdvisoryLock(ctx, pool, "ip_accounting_bot:migrations")
 	if err != nil {
-		return 0, err
+		return 0, validate.Wrap(op, err)
 	}
 	defer func() { _ = unlock(context.Background()) }()
 
 	// 2) Ensure that there is a service table.
 	if err := EnsureMigrationsTable(ctx, pool); err != nil {
-		return 0, err
+		return 0, validate.Wrap(op, err)
 	}
 
 	// 3) Collect the list of available up-migrations and already applied versions.
 	all, err := ListUpMigrations(fsys, dir)
 	if err != nil {
-		return 0, err
+		return 0, validate.Wrap(op, err)
 	}
 	applied, err := AppliedVersions(ctx, pool)
 	if err != nil {
-		return 0, err
+		return 0, validate.Wrap(op, err)
 	}
 	appliedSet := make(map[int64]struct{}, len(applied))
 	for _, v := range applied {
@@ -177,37 +191,37 @@ func ApplyUp(ctx context.Context, pool *pgxpool.Pool, fsys fs.FS, dir string) (i
 
 		sqlBytes, rerr := fs.ReadFile(fsys, m.Path)
 		if rerr != nil {
-			return appliedCount, fmt.Errorf("apply up: read %q: %w", m.Path, rerr)
+			return appliedCount, validate.Wrap(op, rerr)
 		}
 		sql := strings.TrimSpace(string(sqlBytes))
 
 		if m.Concurrent {
 			// 4a) Outside the transaction (for ... CONCURRENTLY).
 			if _, err := pool.Exec(ctx, sql); err != nil {
-				return appliedCount, fmt.Errorf("apply up: exec %q (v=%d): %w", m.Name, m.Version, err)
+				return appliedCount, validate.Wrap(op, err)
 			}
 			if _, err := pool.Exec(ctx, `INSERT INTO schema_migrations(version) VALUES($1) ON CONFLICT DO NOTHING`, m.Version); err != nil {
-				return appliedCount, fmt.Errorf("apply up: record version %d: %w", m.Version, err)
+				return appliedCount, validate.Wrap(op, err)
 			}
 		} else {
 			// 4b) In the transaction.
 			tx, err := pool.Begin(ctx)
 			if err != nil {
-				return appliedCount, fmt.Errorf("apply up: begin tx for %q (v=%d): %w", m.Name, m.Version, err)
+				return appliedCount, validate.Wrap(op, err)
 			}
 			// just in case, if something goes wrong
 			defer func() { _ = tx.Rollback(ctx) }()
 
 			if _, err := tx.Exec(ctx, sql); err != nil {
 				_ = tx.Rollback(ctx)
-				return appliedCount, fmt.Errorf("apply up: exec %q (v=%d): %w", m.Name, m.Version, err)
+				return appliedCount, validate.Wrap(op, err)
 			}
 			if _, err := tx.Exec(ctx, `INSERT INTO schema_migrations(version) VALUES($1)`, m.Version); err != nil {
 				_ = tx.Rollback(ctx)
-				return appliedCount, fmt.Errorf("apply up: record version %d: %w", m.Version, err)
+				return appliedCount, validate.Wrap(op, err)
 			}
 			if err := tx.Commit(ctx); err != nil {
-				return appliedCount, fmt.Errorf("apply up: commit %q (v=%d): %w", m.Name, m.Version, err)
+				return appliedCount, validate.Wrap(op, err)
 			}
 		}
 

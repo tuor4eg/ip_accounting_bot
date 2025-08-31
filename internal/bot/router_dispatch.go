@@ -2,7 +2,8 @@ package bot
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 func DispatchCommand(
@@ -30,23 +31,23 @@ func DispatchCommand(
 	case "add":
 		reply, err := HandleAdd(ctx, addDeps, transport, externalID, args)
 		if err != nil {
-			return "", true, fmt.Errorf("%s: add: %w", op, err)
+			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
 	case "undo":
 		reply, err := HandleUndo(ctx, addDeps, transport, externalID, args)
 		if err != nil {
-			return "", true, fmt.Errorf("%s: undo: %w", op, err)
+			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
 	case "total":
 		reply, err := HandleTotal(ctx, totalDeps, transport, externalID, args)
 		if err != nil {
-			return "", true, fmt.Errorf("%s: total: %w", op, err)
+			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
 	default:
 		// Unknown command: handled=true
-		return "", true, fmt.Errorf("%s: unknown command: %s", op, cmd)
+		return "", true, validate.Wrap(op, ErrUnknownCommand)
 	}
 }

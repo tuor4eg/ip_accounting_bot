@@ -4,25 +4,23 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/tuor4eg/ip_accounting_bot/internal/helper"
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 // InsertIncome inserts a single income record.
 // 'amount' is in minor currency units (e.g., kopecks), must be >= 0.
 // 'at' is the income date; only the date part is stored (cast to DATE in SQL).
 func (s *Store) InsertIncome(ctx context.Context, userID int64, at time.Time, amount int64, note string) error {
-	if s == nil || s.Pool == nil {
-		return fmt.Errorf("insert income: store not initialized")
+	const op = "postgres.InsertIncome"
+
+	if err := validate.ValidateUserID(userID); err != nil {
+		return validate.Wrap(op, err)
 	}
-	if userID <= 0 {
-		return fmt.Errorf("insert income: invalid userID")
-	}
-	if amount < 0 {
-		return fmt.Errorf("insert income: negative amount")
+	if err := validate.ValidateAmount(amount); err != nil {
+		return validate.Wrap(op, err)
 	}
 
 	// Persist only the calendar day for 'at'; NULLIF trims empty notes to NULL.
@@ -31,7 +29,7 @@ func (s *Store) InsertIncome(ctx context.Context, userID int64, at time.Time, am
 		VALUES ($1, $2::date, $3, NULLIF($4, ''))
 	`, userID, at, amount, note)
 	if err != nil {
-		return fmt.Errorf("insert income: %w", err)
+		return validate.Wrap(op, err)
 	}
 	return nil
 }
@@ -44,8 +42,12 @@ func (s *Store) VoidLastIncomeInRange(ctx context.Context, userID int64, from, t
 ) {
 	const op = "postgres.VoidLastIncomeInRange"
 
-	if !helper.IsUTC(from) || !helper.IsUTC(to) || !helper.IsUTC(now) {
-		return 0, time.Time{}, "", false, fmt.Errorf("%s: non-UTC time", op)
+	if err := validate.ValidateUserID(userID); err != nil {
+		return 0, time.Time{}, "", false, validate.Wrap(op, err)
+	}
+
+	if err := validate.ValidateDateRangeUTC(from, to); err != nil {
+		return 0, time.Time{}, "", false, validate.Wrap(op, err)
 	}
 
 	const q = `
@@ -73,7 +75,7 @@ func (s *Store) VoidLastIncomeInRange(ctx context.Context, userID int64, from, t
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, time.Time{}, "", false, nil
 		}
-		return 0, time.Time{}, "", false, fmt.Errorf("%s: %w", op, err)
+		return 0, time.Time{}, "", false, validate.Wrap(op, err)
 	}
 
 	if noteNull.Valid {
@@ -86,28 +88,27 @@ func (s *Store) VoidLastIncomeInRange(ctx context.Context, userID int64, from, t
 // SumIncomes returns the total amount (in minor units) for a user in [from..to] inclusive.
 // 'from' and 'to' are interpreted by their calendar dates (cast to DATE in SQL).
 func (s *Store) SumIncomes(ctx context.Context, userID int64, from, to time.Time) (int64, error) {
-	if userID <= 0 {
-		return 0, fmt.Errorf("sum incomes: invalid userID")
+	const op = "postgres.SumIncomes"
+
+	if err := validate.ValidateUserID(userID); err != nil {
+		return 0, validate.Wrap(op, err)
 	}
-	if from.IsZero() || to.IsZero() {
-		return 0, fmt.Errorf("sum incomes: from/to must be set")
-	}
-	if from.After(to) {
-		return 0, fmt.Errorf("sum incomes: from > to")
+
+	if err := validate.ValidateDateRangeUTC(from, to); err != nil {
+		return 0, validate.Wrap(op, err)
 	}
 
 	var sum int64
 	if err := s.Pool.
 		QueryRow(ctx, `
-			SELECT COALESCE(SUM(amount), 0)
+			SELECT COALESCE(SUM(amount), 0)::bigint
 			FROM incomes
 			WHERE user_id = $1
-			  AND at >= $2::date
-			  AND at <= $3::date
-			  AND voided_at IS NULL
+			AND at BETWEEN $2::date AND $3::date
+			AND voided_at IS NULL;
 		`, userID, from, to).
 		Scan(&sum); err != nil {
-		return 0, fmt.Errorf("sum incomes: %w", err)
+		return 0, validate.Wrap(op, err)
 	}
 	return sum, nil
 }

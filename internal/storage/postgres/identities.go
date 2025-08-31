@@ -3,17 +3,22 @@ package postgres
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 // InsertIncome inserts a single income record.
 // 'amount' is in minor currency units (e.g., kopecks), must be >= 0.
 // 'at' is the income date; only the date part is stored (cast to DATE in SQL).
 func (s *Store) UpsertIdentity(ctx context.Context, transport, externalID string) (int64, error) {
-	if transport == "" || externalID == "" {
-		return 0, fmt.Errorf("empty transport or external ID")
+	const op = "postgres.UpsertIdentity"
+
+	if err := validate.ValidateTransport(transport); err != nil {
+		return 0, validate.Wrap(op, err)
+	}
+	if err := validate.ValidateExternalID(externalID); err != nil {
+		return 0, validate.Wrap(op, err)
 	}
 
 	var uid int64
@@ -26,13 +31,13 @@ func (s *Store) UpsertIdentity(ctx context.Context, transport, externalID string
 		).Scan(&uid); err == nil {
 			return nil
 		} else if !errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("select existing: %w", err)
+			return validate.Wrap(op, err)
 		}
 
 		// 2) Create new user if not exists.
 		var newUserID int64
 		if err := tx.QueryRow(ctx, `INSERT INTO users DEFAULT VALUES RETURNING id`).Scan(&newUserID); err != nil {
-			return fmt.Errorf("create user: %w", err)
+			return validate.Wrap(op, err)
 		}
 
 		// 3) Try to bind identity (could race with a parallel insert).
@@ -59,17 +64,17 @@ func (s *Store) UpsertIdentity(ctx context.Context, transport, externalID string
 				`SELECT user_id FROM user_identities WHERE transport=$1 AND external_id=$2`,
 				transport, externalID,
 			).Scan(&uid); err != nil {
-				return fmt.Errorf("fetch concurrent user_id: %w", err)
+				return validate.Wrap(op, err)
 			}
 			return nil
 
 		default:
-			return fmt.Errorf("insert identity: %w", err)
+			return validate.Wrap(op, err)
 		}
 	})
 
 	if err != nil {
-		return 0, fmt.Errorf("upsert identity: %w", err)
+		return 0, validate.Wrap(op, err)
 	}
 	return uid, nil
 }

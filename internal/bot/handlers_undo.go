@@ -2,9 +2,10 @@ package bot
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
+
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 type undoer interface {
@@ -19,7 +20,7 @@ func HandleUndo(ctx context.Context, deps AddDeps, transport, externalID string,
 	userID, err := deps.Identities.UpsertIdentity(ctx, transport, externalID)
 
 	if err != nil {
-		return "", fmt.Errorf("%s: upsert identity: %w", op, err)
+		return "", validate.Wrap(op, err)
 	}
 
 	now := time.Now
@@ -33,13 +34,13 @@ func HandleUndo(ctx context.Context, deps AddDeps, transport, externalID string,
 	u, ok := deps.Income.(undoer)
 
 	if !ok {
-		return "", fmt.Errorf("%s: service does not support undo", op)
+		return "", validate.Wrap(op, ErrServiceDoesNotSupportUndo)
 	}
 
 	amount, at, note, ok, err := u.UndoLastQuarter(ctx, userID, nowUTC)
 
 	if err != nil {
-		return "", fmt.Errorf("%s: undo last quarter: %w", op, err)
+		return "", validate.Wrap(op, err)
 	}
 
 	if !ok {

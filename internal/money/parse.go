@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 var (
@@ -29,20 +31,21 @@ var (
 //   - Negative values are rejected.
 func ParseAmount(input string) (int64, error) {
 	const op = "money.ParseAmount"
-	if input == "" {
-		return 0, fmt.Errorf("%w: empty input", ErrInvalidAmount)
+
+	if err := validate.ValidateEmptyString(input); err != nil {
+		return 0, validate.Wrap(op, err)
 	}
 
 	s := normalizeInput(input)
 
 	// Reject negatives (incomes only).
 	if strings.ContainsRune(s, '-') {
-		return 0, fmt.Errorf("%s: %w", op, ErrNegativeNotAllowed)
+		return 0, validate.Wrap(op, ErrNegativeNotAllowed)
 	}
 
 	// 1) Try explicit rub/kop tokens.
 	if rub, kop, ok, err := parseRubKopTokens(s); err != nil {
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return 0, validate.Wrap(op, err)
 	} else if ok {
 		return combineRublesAndKopecks(rub, kop)
 	}
@@ -50,7 +53,7 @@ func ParseAmount(input string) (int64, error) {
 	// 2) Fallback to generic number parser.
 	amt, err := parseGenericNumber(s)
 	if err != nil {
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return 0, validate.Wrap(op, err)
 	}
 	return amt, nil
 }

@@ -13,6 +13,13 @@ type TelegramUpdateGetter interface {
 	GetUpdates(ctx context.Context, offset int64, timeoutSec int) ([]telegram.Update, error)
 }
 
+const (
+	tgGetUpdatesTimeoutSec = 30
+	tgPollReqTimeout       = 35 * time.Second
+	tgSendTimeout          = 5 * time.Second
+	tgPingTimeout          = 8 * time.Second
+)
+
 func nextOffset(cur int64, updID int64) int64 {
 	if v := updID + 1; v > cur {
 		return v
@@ -32,16 +39,14 @@ func RunTelegramPolling(
 
 	offset := int64(0)
 
-	timeoutSec := 30
-
 	for {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
 
-		ctxPoll, cancel := context.WithTimeout(ctx, 35*time.Second)
+		ctxPoll, cancel := context.WithTimeout(ctx, tgPollReqTimeout)
 
-		updates, err := client.GetUpdates(ctxPoll, offset, timeoutSec)
+		updates, err := client.GetUpdates(ctxPoll, offset, tgGetUpdatesTimeoutSec)
 
 		cancel()
 

@@ -2,11 +2,17 @@ package migrations
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"hash/fnv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
+)
+
+var (
+	ErrInvalidPool = errors.New("invalid pool")
+	ErrEmptyName   = errors.New("empty name")
 )
 
 // UnlockFunc releases the advisory lock acquired by AcquireAdvisoryLock.
@@ -22,12 +28,14 @@ type UnlockFunc func(ctx context.Context) error
 //   defer unlock(context.Background())
 
 func AcquireAdvisoryLock(ctx context.Context, pool *pgxpool.Pool, name string) (UnlockFunc, error) {
+	const op = "migrations.AcquireAdvisoryLock"
+
 	if pool == nil {
-		return nil, fmt.Errorf("pool is nil")
+		return nil, validate.Wrap(op, ErrInvalidPool)
 	}
 
 	if name == "" {
-		return nil, fmt.Errorf("name is empty")
+		return nil, validate.Wrap(op, ErrEmptyName)
 	}
 
 	// Stable 64-bit key from name (negative values are fine for Postgres BIGINT).
@@ -38,13 +46,13 @@ func AcquireAdvisoryLock(ctx context.Context, pool *pgxpool.Pool, name string) (
 	conn, err := pool.Acquire(ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("acquire connection: %w", err)
+		return nil, validate.Wrap(op, err)
 	}
 
 	if _, err := conn.Exec(ctx, `SELECT pg_advisory_lock($1)`, lockID); err != nil {
 		conn.Release()
 
-		return nil, fmt.Errorf("acquire advisory lock: pg_advisory_lock(%d): %w", lockID, err)
+		return nil, validate.Wrap(op, err)
 	}
 
 	unlock := func(ctx context.Context) error {
@@ -63,7 +71,7 @@ func AcquireAdvisoryLock(ctx context.Context, pool *pgxpool.Pool, name string) (
 		}
 
 		if _, err := conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, lockID); err != nil {
-			return fmt.Errorf("release advisory lock: pg_advisory_unlock(%d): %w", lockID, err)
+			return validate.Wrap(op, err)
 		}
 
 		return nil

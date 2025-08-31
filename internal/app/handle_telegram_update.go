@@ -3,12 +3,12 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
 	"github.com/tuor4eg/ip_accounting_bot/internal/telegram"
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 type TelegramSender interface {
@@ -49,7 +49,7 @@ func HandleTelegramUpdate(
 
 	if !handled {
 		if sendErr := sender.SendMessage(ctx, chatID, bot.UnknownCommandText()); sendErr != nil {
-			return fmt.Errorf("%s: send: %w", op, sendErr)
+			return validate.Wrap(op, sendErr)
 		}
 
 		return nil
@@ -58,7 +58,7 @@ func HandleTelegramUpdate(
 	if err != nil {
 		if errors.Is(err, bot.ErrBadInput) {
 			if sendErr := sender.SendMessage(ctx, chatID, bot.BadAmountHintText()); sendErr != nil {
-				return fmt.Errorf("%s: send message: %w", op, sendErr)
+				return validate.Wrap(op, sendErr)
 			}
 
 			return nil
@@ -66,7 +66,7 @@ func HandleTelegramUpdate(
 
 		if errors.Is(err, bot.ErrAmountIsZero) {
 			if sendErr := sender.SendMessage(ctx, chatID, bot.AmountIsZeroText()); sendErr != nil {
-				return fmt.Errorf("%s: send message: %w", op, sendErr)
+				return validate.Wrap(op, sendErr)
 			}
 
 			return nil
@@ -74,20 +74,20 @@ func HandleTelegramUpdate(
 
 		if strings.Contains(err.Error(), "unknown command") {
 			if sendErr := sender.SendMessage(ctx, chatID, bot.UnknownCommandText()); sendErr != nil {
-				return fmt.Errorf("%s: send message: %w", op, sendErr)
+				return validate.Wrap(op, sendErr)
 			}
 
 			return nil
 		}
 		if sendErr := sender.SendMessage(ctx, chatID, bot.ErrorText()); sendErr != nil {
-			return fmt.Errorf("%s: send message: %w", op, sendErr)
+			return validate.Wrap(op, sendErr)
 		}
 
 		return nil
 	}
 
 	if err := sender.SendMessage(ctx, chatID, reply); err != nil {
-		return fmt.Errorf("%s: send message: %w", op, err)
+		return validate.Wrap(op, err)
 	}
 
 	return nil

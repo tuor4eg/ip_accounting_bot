@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/period"
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 type IncomeStore interface {
@@ -31,20 +31,24 @@ func NewIncomeService(store IncomeStore) *IncomeService {
 // - at must be a non-zero time; the date part is persisted (storage casts to DATE)
 // - note is trimmed; empty string is stored as NULL (handled by storage)
 func (s *IncomeService) AddIncome(ctx context.Context, userID int64, at time.Time, amount int64, note string) error {
-	if userID <= 0 {
-		return fmt.Errorf("add income: invalid userID")
+	const op = "service.IncomeService.AddIncome"
+
+	if err := validate.ValidateUserID(userID); err != nil {
+		return validate.Wrap(op, err)
 	}
-	if at.IsZero() {
-		return fmt.Errorf("add income: at is zero")
+
+	if err := validate.ValidateAmount(amount); err != nil {
+		return validate.Wrap(op, err)
 	}
-	if amount < 0 {
-		return fmt.Errorf("add income: negative amount")
+
+	if err := validate.ValidateDate(at); err != nil {
+		return validate.Wrap(op, err)
 	}
 	note = strings.TrimSpace(note)
 
 	// Delegate to storage; it applies DATE cast and NULLIF on note.
 	if err := s.store.InsertIncome(ctx, userID, at, amount, note); err != nil {
-		return fmt.Errorf("add income: %w", err)
+		return validate.Wrap(op, err)
 	}
 	return nil
 }
@@ -60,7 +64,7 @@ func (s *IncomeService) UndoLastQuarter(ctx context.Context, userID int64, now t
 	amount, at, note, ok, err := s.store.VoidLastIncomeInRange(ctx, userID, qStart, qEnd, nowUTC)
 
 	if err != nil {
-		return 0, time.Time{}, "", false, fmt.Errorf("%s: UndoLastQuarter: %w", op, err)
+		return 0, time.Time{}, "", false, validate.Wrap(op, err)
 	}
 
 	return amount, at, note, ok, nil
@@ -82,7 +86,7 @@ func (s *IncomeService) SumQuarter(
 	// Aggregate sum of incomes for the user within the quarter.
 	sum, err = s.store.SumIncomes(ctx, userID, qStart, qEnd)
 	if err != nil {
-		return 0, 0, qStart, qEnd, fmt.Errorf("%s: SumIncomes: %w", op, err)
+		return 0, 0, qStart, qEnd, validate.Wrap(op, err)
 	}
 
 	// Deterministic 6% tax: floor division, no floats.

@@ -2,17 +2,16 @@ package memstore
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/tuor4eg/ip_accounting_bot/internal/helper"
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 func (s *Store) InsertIncome(ctx context.Context, userID int64, at time.Time, amount int64, note string) error {
 	const op = "memstore.InsertIncome"
 
-	if amount <= 0 {
-		return fmt.Errorf("%s: negative or zero amount", op)
+	if err := validate.ValidateAmount(amount); err != nil {
+		return validate.Wrap(op, err)
 	}
 
 	utc := at.UTC()
@@ -38,8 +37,8 @@ func (s *Store) VoidLastIncomeInRange(ctx context.Context, userID int64, from, t
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if !helper.IsUTC(from) || !helper.IsUTC(to) || !helper.IsUTC(now) {
-		return 0, time.Time{}, "", false, fmt.Errorf("%s: non-UTC time", op)
+	if err := validate.ValidateDateRangeUTC(from, to); err != nil {
+		return 0, time.Time{}, "", false, validate.Wrap(op, err)
 	}
 
 	incomes := s.incomes[userID]
@@ -52,7 +51,7 @@ func (s *Store) VoidLastIncomeInRange(ctx context.Context, userID int64, from, t
 	bestAt := time.Time{}
 
 	for i, income := range incomes {
-		if !income.At.After(from) && !income.At.Before(to) && !income.VoidedAt.IsZero() {
+		if !income.At.Before(from) && !income.At.After(to) && income.VoidedAt.IsZero() {
 
 			if bestIdx == -1 || income.At.After(bestAt) || (income.At.Equal(bestAt) && i > bestIdx) {
 				bestIdx = i

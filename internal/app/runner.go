@@ -2,8 +2,9 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"sync"
+
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 type Runner interface {
@@ -12,6 +13,8 @@ type Runner interface {
 }
 
 func runAll(ctx context.Context, runners []Runner) error {
+	const op = "app.runAll"
+
 	if len(runners) == 0 {
 		<-ctx.Done()
 		return nil
@@ -31,7 +34,7 @@ func runAll(ctx context.Context, runners []Runner) error {
 
 			if err := r.Run(ctx); err != nil {
 				select {
-				case errOnce <- fmt.Errorf("runner %s failed: %w", r.Name(), err):
+				case errOnce <- validate.Wrap(op, err):
 				default:
 				}
 			}

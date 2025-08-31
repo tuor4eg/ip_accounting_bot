@@ -2,9 +2,10 @@ package bot
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
+
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 type QuarterSummer interface {
@@ -27,7 +28,7 @@ func HandleTotal(ctx context.Context, deps TotalDeps, transport, externalID, arg
 	userID, err := deps.Identities.UpsertIdentity(ctx, transport, externalID)
 
 	if err != nil {
-		return "", fmt.Errorf("%s: upsert identity: %w", op, err)
+		return "", validate.Wrap(op, err)
 	}
 
 	// Clock (UTC)
@@ -41,7 +42,7 @@ func HandleTotal(ctx context.Context, deps TotalDeps, transport, externalID, arg
 	sum, tax, qStart, qEnd, err := deps.QuarterSum.SumQuarter(ctx, userID, nowUTC)
 
 	if err != nil {
-		return "", fmt.Errorf("%s: sum quarter: %w", op, err)
+		return "", validate.Wrap(op, err)
 	}
 
 	return TotalText(sum, tax, qStart, qEnd), nil

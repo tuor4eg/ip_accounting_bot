@@ -2,13 +2,14 @@ package app
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log/slog"
 	"time"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
 	"github.com/tuor4eg/ip_accounting_bot/internal/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 type App struct {
@@ -18,6 +19,12 @@ type App struct {
 	store   Store
 	income  IncomeUsecase
 }
+
+var (
+	ErrStoreNotSet                        = errors.New("store is not set")
+	ErrIncomeUsecaseNotSet                = errors.New("income usecase is not set")
+	ErrStoreDoesNotImplementIdentityStore = errors.New("store does not implement IdentityStore")
+)
 
 func New(cfg *config.Config) *App {
 	return &App{
@@ -34,17 +41,17 @@ func (a *App) BotDeps() (add bot.AddDeps, total bot.TotalDeps, err error) {
 	op := "app.BotDeps"
 
 	if a.store == nil {
-		return add, total, fmt.Errorf("%s: store is not set", op)
+		return add, total, validate.Wrap(op, ErrStoreNotSet)
 	}
 
 	if a.income == nil {
-		return add, total, fmt.Errorf("%s: income usecase is not set", op)
+		return add, total, validate.Wrap(op, ErrIncomeUsecaseNotSet)
 	}
 
 	ids, ok := a.store.(bot.IdentityStore)
 
 	if !ok {
-		return add, total, fmt.Errorf("%s: store does not implement IdentityStore", op)
+		return add, total, validate.Wrap(op, ErrStoreDoesNotImplementIdentityStore)
 	}
 
 	add = bot.AddDeps{

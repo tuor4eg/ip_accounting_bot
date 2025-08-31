@@ -2,12 +2,12 @@ package bot
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/money"
+	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 type IdentityStore interface {
@@ -30,7 +30,7 @@ func HandleAdd(ctx context.Context, deps AddDeps, transport, externalID string, 
 	args = strings.TrimSpace(args)
 
 	if args == "" {
-		return "", fmt.Errorf("%s: no arguments provided: %w", op, ErrBadInput)
+		return "", validate.Wrap(op, ErrBadInput)
 	}
 
 	toks := strings.Fields(args)
@@ -60,11 +60,11 @@ func HandleAdd(ctx context.Context, deps AddDeps, transport, externalID string, 
 		}
 	}
 	if cut == -1 {
-		return "", fmt.Errorf("%s: parse amount: %w", op, ErrBadInput)
+		return "", validate.Wrap(op, ErrBadInput)
 	}
 
 	if amount == 0 {
-		return "", fmt.Errorf("%s: amount is 0: %w", op, ErrAmountIsZero)
+		return "", validate.Wrap(op, ErrAmountIsZero)
 	}
 
 	note := strings.TrimSpace(strings.Join(toks[cut:], " "))
@@ -72,7 +72,7 @@ func HandleAdd(ctx context.Context, deps AddDeps, transport, externalID string, 
 	// Resolve or create user identity.
 	userID, err := deps.Identities.UpsertIdentity(ctx, transport, externalID)
 	if err != nil {
-		return "", fmt.Errorf("%s: upsert identity: %w", op, err)
+		return "", validate.Wrap(op, err)
 	}
 
 	// Use UTC "now"; storage casts to DATE.
@@ -84,7 +84,7 @@ func HandleAdd(ctx context.Context, deps AddDeps, transport, externalID string, 
 
 	// Persist income.
 	if err := deps.Income.AddIncome(ctx, userID, at, amount, note); err != nil {
-		return "", fmt.Errorf("%s: add income: %w", op, err)
+		return "", validate.Wrap(op, err)
 	}
 
 	return AddSuccessText(amount, at, note), nil
