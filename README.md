@@ -33,33 +33,30 @@ cd ip_accounting_bot
 ### 2) Install dependencies
 Make sure you have **Go 1.24+** installed.
 ```bash
-go mod tidy
+make deps
 ```
 
 ### 3) Set environment variables
-Create a `.env` file in the project root:
-```env
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-DATABASE_URL=postgres://user:password@localhost:5432/ip_accounting
-LOG_LEVEL=info        # debug|info|warn|error
-LOG_FORMAT=text       # json|text|min
+```bash
+make deps
 ```
+Fill the file with your valid data
 
 ### 4) Run database migrations
 ```bash
-go run ./cmd/migrate
+make migrate
 ```
 
-### 5) Run the bot
+### 5) Build the binary
 ```bash
-go run ./cmd/bot
+make build-bot
 ```
 
-### 6) Build the binary
+### 6) Run the bot
 ```bash
-go build -o ip_bot ./cmd/bot
-./ip_bot
+make run-bot
 ```
+(Also build the binary for running)
 
 ## Repository Structure
 
