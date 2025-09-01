@@ -8,7 +8,7 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-func (s *Store) InsertPayment(ctx context.Context, userID int64, at time.Time, amount int64, note string, paymentType string) error {
+func (s *Store) InsertPayment(ctx context.Context, userID int64, at time.Time, amount int64, note string, paymentType domain.PaymentType) error {
 	const op = "memstore.InsertPayment"
 
 	if err := validate.ValidateUserID(userID); err != nil {
@@ -43,7 +43,7 @@ func (s *Store) InsertPayment(ctx context.Context, userID int64, at time.Time, a
 	return nil
 }
 
-func (s *Store) VoidLastPaymentInRange(ctx context.Context, userID int64, from, to, now time.Time, paymentType string) (
+func (s *Store) VoidLastPaymentInRange(ctx context.Context, userID int64, from, to, now time.Time, paymentType domain.PaymentType) (
 	amount int64, at time.Time, note string, pType domain.PaymentType, ok bool, err error,
 ) {
 	const op = "memstore.VoidLastPaymentInRange"
@@ -81,7 +81,7 @@ func (s *Store) VoidLastPaymentInRange(ctx context.Context, userID int64, from, 
 	return payments[bestIdx].Amount, payments[bestIdx].At, payments[bestIdx].Note, payments[bestIdx].Type, true, nil
 }
 
-func (s *Store) SumPayments(ctx context.Context, userID int64, from, to time.Time, paymentType string) (int64, int64, error) {
+func (s *Store) SumPayments(ctx context.Context, userID int64, from, to time.Time) (int64, int64, error) {
 	const op = "memstore.SumPayments"
 
 	s.mu.Lock()
@@ -98,13 +98,10 @@ func (s *Store) SumPayments(ctx context.Context, userID int64, from, to time.Tim
 
 	for _, payment := range payments {
 		if !payment.At.Before(from) && !payment.At.After(to) && payment.VoidedAt.IsZero() {
-			// if paymentType is empty, include all types; otherwise filter by type
-			if paymentType == "" || payment.Type == domain.PaymentType(paymentType) {
-				if payment.Type == domain.PaymentTypeContrib {
-					sumContrib += payment.Amount
-				} else {
-					sumAdvance += payment.Amount
-				}
+			if payment.Type == domain.PaymentTypeContrib {
+				sumContrib += payment.Amount
+			} else {
+				sumAdvance += payment.Amount
 			}
 		}
 	}

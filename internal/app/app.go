@@ -18,12 +18,14 @@ type App struct {
 	log     *slog.Logger
 	store   Store
 	income  IncomeUsecase
+	payment PaymentUsecase
 }
 
 var (
 	ErrStoreNotSet                        = errors.New("store is not set")
 	ErrIncomeUsecaseNotSet                = errors.New("income usecase is not set")
 	ErrStoreDoesNotImplementIdentityStore = errors.New("store does not implement IdentityStore")
+	ErrPaymentUsecaseNotSet               = errors.New("payment usecase is not set")
 )
 
 func New(cfg *config.Config) *App {
@@ -48,6 +50,10 @@ func (a *App) BotDeps() (add bot.AddDeps, total bot.TotalDeps, err error) {
 		return add, total, validate.Wrap(op, ErrIncomeUsecaseNotSet)
 	}
 
+	if a.payment == nil {
+		return add, total, validate.Wrap(op, ErrPaymentUsecaseNotSet)
+	}
+
 	ids, ok := a.store.(bot.IdentityStore)
 
 	if !ok {
@@ -57,6 +63,7 @@ func (a *App) BotDeps() (add bot.AddDeps, total bot.TotalDeps, err error) {
 	add = bot.AddDeps{
 		Identities: ids,
 		Income:     a.income,
+		Payment:    a.payment,
 		Now:        time.Now,
 	}
 

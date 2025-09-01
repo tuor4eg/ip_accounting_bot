@@ -77,16 +77,23 @@ ip_accounting_bot/
 │   │   ├── store.go                         # Storage layer interface and implementation
 │   │   └── telegram_runner.go               # Telegram bot runner implementation
 │   ├── bot/
+│   │   ├── deps.go                          # Bot dependencies and initialization
 │   │   ├── errors.go                        # Bot error handling and custom errors
 │   │   ├── handlers_add.go                  # Add income command handler
+│   │   ├── handlers_add_advance.go          # Advanced add income handler
+│   │   ├── handlers_add_contrib.go          # Contributory add income handler
 │   │   ├── handlers_add_test.go             # Add income command handler tests
 │   │   ├── handlers_help.go                 # Help command handler
 │   │   ├── handlers_start.go                # Start command handler
 │   │   ├── handlers_total.go                # Total income command handler
 │   │   ├── handlers_undo.go                 # Undo last action command handler
+│   │   ├── handlers_undo_advance.go         # Advanced undo handler
+│   │   ├── handlers_undo_contrib.go         # Contributory undo handler
 │   │   ├── parse.go                         # Message parsing utilities
 │   │   ├── router_dispatch.go               # Message routing and dispatch logic
-│   │   └── text.go                          # Bot text messages and templates
+│   │   ├── text.go                          # Bot text messages and templates
+│   │   ├── validate.go                      # Bot-specific validation
+│   │   └── router_dispatch.go               # Message routing and dispatch logic
 │   ├── config/
 │   │   └── config.go                        # Configuration loading from environment
 │   ├── domain/
@@ -121,6 +128,9 @@ ip_accounting_bot/
 │   │       ├── identities.go                # User identity storage operations
 │   │       ├── incomes.go                   # Income data storage operations
 │   │       └── payments.go                  # PostgreSQL payments data storage
+│   ├── tax/
+│   │   ├── tax.go                           # Tax calculation logic
+│   │   └── tax_test.go                      # Tax calculation tests
 │   ├── telegram/
 │   │   ├── client.go                        # Telegram Bot API HTTP client
 │   │   ├── types.go                         # Telegram API data structures
@@ -128,12 +138,12 @@ ip_accounting_bot/
 │   └── validate/
 │       ├── validate.go                      # Data validation utilities
 │       └── wrap.go                          # Validation wrapper functions
-
 ├── go.mod                                   # Go module definition and dependencies
 ├── go.sum                                   # Go module checksums
 ├── .gitignore                               # Git ignore rules
 ├── CHANGELOG.md                             # Project changelog
 ├── LICENSE                                  # Business Source License 1.1
+├── Makefile                                 # Build and development commands
 └── README.md                                # Project documentation
 ```
 
@@ -141,6 +151,7 @@ ip_accounting_bot/
 
 #### Project Files
 - **`.gitignore`** - Git ignore rules for Go projects, excludes binaries, test files, coverage reports, and environment files
+- **`Makefile`** - Build automation and development commands
 
 #### Command Line Applications
 - **`cmd/bot/main.go`** - Bot application entry point, initializes configuration, creates application and starts Telegram bot
@@ -156,16 +167,22 @@ ip_accounting_bot/
 - **`internal/app/telegram_runner.go`** - Telegram bot implementation, processes incoming messages and sends responses
 
 #### Bot Handlers
+- **`internal/bot/deps.go`** - Bot dependencies and initialization logic
 - **`internal/bot/errors.go`** - Bot error handling, custom error types and error management
 - **`internal/bot/handlers_add.go`** - Add income command handler implementation
+- **`internal/bot/handlers_add_advance.go`** - Advanced add income handler implementation
+- **`internal/bot/handlers_add_contrib.go`** - Contributory add income handler implementation
 - **`internal/bot/handlers_add_test.go`** - Tests for add income command handler
 - **`internal/bot/handlers_help.go`** - Help command handler implementation
 - **`internal/bot/handlers_start.go`** - Start command handler implementation
 - **`internal/bot/handlers_total.go`** - Total income command handler implementation
 - **`internal/bot/handlers_undo.go`** - Undo last action command handler implementation
+- **`internal/bot/handlers_undo_advance.go`** - Advanced undo handler implementation
+- **`internal/bot/handlers_undo_contrib.go`** - Contributory undo handler implementation
 - **`internal/bot/parse.go`** - Message parsing utilities for extracting commands and parameters
 - **`internal/bot/router_dispatch.go`** - Message routing and dispatch logic to appropriate handlers
 - **`internal/bot/text.go`** - Bot text messages, templates and localization
+- **`internal/bot/validate.go`** - Bot-specific validation functions
 
 #### Configuration & Domain
 - **`internal/config/config.go`** - Configuration loading from environment variables with .env file support
@@ -189,6 +206,8 @@ ip_accounting_bot/
 - **`internal/period/quarter.go`** - Quarter period calculations and date utilities
 - **`internal/period/quarter_test.go`** - Tests for quarter period calculations
 - **`internal/service/income.go`** - Income business logic service layer
+- **`internal/tax/tax.go`** - Tax calculation logic and business rules
+- **`internal/tax/tax_test.go`** - Tests for tax calculation logic
 
 #### Data Storage
 - **`internal/storage/memstore/base.go`** - In-memory storage base implementation for development/testing

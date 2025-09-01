@@ -8,10 +8,6 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-type undoer interface {
-	UndoLastQuarter(ctx context.Context, userID int64, now time.Time) (amount int64, at time.Time, note string, ok bool, err error)
-}
-
 func HandleUndo(ctx context.Context, deps AddDeps, transport, externalID string, args string) (string, error) {
 	const op = "bot.HandleUndo"
 
@@ -31,7 +27,7 @@ func HandleUndo(ctx context.Context, deps AddDeps, transport, externalID string,
 
 	nowUTC := now().UTC()
 
-	u, ok := deps.Income.(undoer)
+	u, ok := deps.Income.(undoerIncome)
 
 	if !ok {
 		return "", validate.Wrap(op, ErrServiceDoesNotSupportUndo)

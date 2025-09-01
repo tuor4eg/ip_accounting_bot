@@ -15,8 +15,6 @@ import (
 var (
 	// ErrInvalidAmount is returned when the input cannot be parsed as a money amount.
 	ErrInvalidAmount = errors.New("invalid amount")
-	// ErrNegativeNotAllowed is returned when a negative amount is provided.
-	ErrNegativeNotAllowed = errors.New("negative amount is not allowed")
 	// ErrOverflow is returned when the parsed number would overflow int64.
 	ErrOverflow = errors.New("amount overflow")
 )
@@ -37,11 +35,6 @@ func ParseAmount(input string) (int64, error) {
 	}
 
 	s := normalizeInput(input)
-
-	// Reject negatives (incomes only).
-	if strings.ContainsRune(s, '-') {
-		return 0, validate.Wrap(op, ErrNegativeNotAllowed)
-	}
 
 	// 1) Try explicit rub/kop tokens.
 	if rub, kop, ok, err := parseRubKopTokens(s); err != nil {
