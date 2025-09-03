@@ -7,14 +7,33 @@
 **IP Accounting Bot** is a Telegram bot for sole proprietors that helps track income and reminds about tax payments.
 
 ## Features (MVP)
-- Slash commands:
-  - `/start`, `/help`
-  - `/add <amount> [note]` — manual income input (kopecks, no floats)
-  - `/total` — current quarter totals (sum + 6% tax)
-  - `/undo` — void (soft-delete) the newest income in the current quarter
-- Deterministic money math: `int64` in kopecks, no floats
-- UTC dates (stored as `DATE`), quarter bounds are **inclusive**
-- Soft-delete via `voided_at`, aggregates use only active rows
+- **Slash commands:**
+  - `/start` — brief usage guide for the bot
+  - `/help` — detailed help for all commands
+  - `/add <amount> [note]` — add income (in kopecks, no floats)
+  - `/add_contrib <amount> [note]` — add contribution
+  - `/add_advance <amount> [note]` — add advance payment
+  - `/total` — current quarter totals (income sum and 6% tax)
+  - `/undo` — undo last income for the quarter
+  - `/undo_contrib` — undo last contribution
+  - `/undo_advance` — undo last advance payment
+- **Amount format:** supports spaces/dots/commas as thousand separators, also "10р 50к" format
+- **Deterministic math:** `int64` in kopecks, no floats
+- **UTC dates** (stored as `DATE`), quarter bounds are **inclusive**
+- **Soft delete** via `voided_at`, aggregates use only active rows
+
+### Command usage examples:
+```
+/add 1000                    # Add income of 1000 rubles
+/add 1 234,56 order #42      # Add income with note
+/add 10р 50к advance         # Add income in "rubles kopecks" format
+/add_contrib 5000            # Add contribution of 5000 rubles
+/add_advance 3000            # Add advance payment of 3000 rubles
+/total                       # Show current quarter totals
+/undo                        # Undo last income
+/undo_contrib                # Undo last contribution
+/undo_advance                # Undo last advance payment
+```
 
 ## Tech Stack
 - Go (version per `go.mod`)
