@@ -6,12 +6,7 @@ import (
 	"time"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
-	"github.com/tuor4eg/ip_accounting_bot/internal/telegram"
 )
-
-type TelegramUpdateGetter interface {
-	GetUpdates(ctx context.Context, offset int64, timeoutSec int) ([]telegram.Update, error)
-}
 
 const (
 	tgGetUpdatesTimeoutSec = 30

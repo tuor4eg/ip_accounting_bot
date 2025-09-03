@@ -10,14 +10,6 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-type PaymentStore interface {
-	InsertPayment(ctx context.Context, userID int64, at time.Time, amount int64, note string, payoutType domain.PaymentType) error
-	VoidLastPaymentInRange(ctx context.Context, userID int64, from, to, now time.Time, paymentType domain.PaymentType) (
-		amount int64, at time.Time, note string, pType domain.PaymentType, ok bool, err error,
-	)
-	SumPayments(ctx context.Context, userID int64, from, to time.Time) (int64, int64, error)
-}
-
 func NewPaymentService(store PaymentStore) *PaymentService {
 	return &PaymentService{store: store}
 }

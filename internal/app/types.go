@@ -5,6 +5,7 @@ import (
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
 	"github.com/tuor4eg/ip_accounting_bot/internal/config"
+	"github.com/tuor4eg/ip_accounting_bot/internal/domain"
 	"github.com/tuor4eg/ip_accounting_bot/internal/telegram"
 )
 
@@ -14,9 +15,9 @@ type App struct {
 	runners []Runner
 	log     *slog.Logger
 	store   Store
-	income  IncomeUsecase
-	payment PaymentUsecase
-	total   TotalUsecase
+	income  domain.IncomeUsecase
+	payment domain.PaymentUsecase
+	total   domain.TotalUsecase
 }
 
 // TelegramRunner handles Telegram bot operations

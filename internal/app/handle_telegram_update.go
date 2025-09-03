@@ -11,10 +11,6 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-type TelegramSender interface {
-	SendMessage(ctx context.Context, chatID int64, text string) error
-}
-
 // Normalize self: drop leading '@' if provided
 func NormalizeSelf(self string) string {
 	return strings.TrimPrefix(self, "@")

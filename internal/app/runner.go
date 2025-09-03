@@ -7,11 +7,6 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-type Runner interface {
-	Name() string
-	Run(ctx context.Context) error
-}
-
 func runAll(ctx context.Context, runners []Runner) error {
 	const op = "app.runAll"
 

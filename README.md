@@ -27,7 +27,8 @@
 ### Package Organization
 Each package should follow a consistent structure with separate files for different concerns:
 
-- **`types.go`** - Contains all type definitions, structs, and interfaces for the package
+- **`types.go`** - Contains all type definitions and structs for the package
+- **`interfaces.go`** - Contains all interface definitions for the package
 - **`errors.go`** - Contains all error definitions and custom error types
 - **Main files** - Contain only business logic, functions, and methods
 
@@ -48,6 +49,7 @@ Each package should follow a consistent structure with separate files for differ
 ```
 internal/service/
 ├── types.go          # All type definitions
+├── interfaces.go     # All interface definitions
 ├── errors.go         # All error definitions  
 ├── income.go         # Business logic only
 ├── payment.go        # Business logic only
@@ -71,9 +73,10 @@ type IncomeService struct {
 ```
 
 ### When to Create These Files
-- **`types.go`** - Create when package has structs, interfaces, or custom types
+- **`types.go`** - Create when package has structs or custom types
+- **`interfaces.go`** - Create when package has interface definitions
 - **`errors.go`** - Create when package defines custom errors or error constants
-- **Don't create empty files** - Only create if there are actual types/errors to define
+- **Don't create empty files** - Only create if there are actual types/interfaces/errors to define
 - **Follow Go conventions** - Use descriptive names and proper documentation
 
 ## Installation & Run
@@ -129,6 +132,7 @@ ip_accounting_bot/
 │   │   ├── app.go                           # Main application logic and runner management
 │   │   ├── errors.go                        # Application error definitions
 │   │   ├── handle_telegram_update.go        # Telegram update processing logic
+│   │   ├── interfaces.go                    # Application interface definitions
 │   │   ├── run_telegram_polling.go          # Telegram polling implementation
 │   │   ├── runner.go                        # Runner interface and concurrent execution
 │   │   ├── service.go                       # Service layer interface and implementation
@@ -170,6 +174,7 @@ ip_accounting_bot/
 │   │   └── types.go                         # Cryptographic storage type definitions
 │   ├── domain/
 │   │   ├── const.go                         # Domain constants and definitions
+│   │   ├── interfaces.go                    # Domain interface definitions
 │   │   ├── totals.go                        # Domain totals and aggregates logic
 │   │   └── types.go                         # Domain type definitions
 │   ├── logging/
@@ -197,6 +202,7 @@ ip_accounting_bot/
 │   │   └── year_test.go                     # Year period tests
 │   ├── service/
 │   │   ├── income.go                        # Income business logic service
+│   │   ├── interfaces.go                    # Service interface definitions
 │   │   ├── payment.go                       # Payment business logic service
 │   │   ├── total.go                         # Total calculation service
 │   │   └── types.go                         # Service type definitions

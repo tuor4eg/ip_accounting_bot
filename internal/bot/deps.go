@@ -3,11 +3,13 @@ package bot
 
 import (
 	"time"
+
+	"github.com/tuor4eg/ip_accounting_bot/internal/domain"
 )
 
 // NewBotDeps wires dependencies for the bot.
 // If now is nil, time.Now will be used.
-func NewBotDeps(identities IdentityStore, income IncomeUsecase, payment PaymentUsecase, total TotalUsecase, now func() time.Time) *BotDeps {
+func NewBotDeps(identities domain.IdentityStore, income domain.IncomeUsecase, payment domain.PaymentUsecase, total domain.TotalUsecase, now func() time.Time) *BotDeps {
 	if now == nil {
 		now = time.Now
 	}
