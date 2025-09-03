@@ -114,7 +114,7 @@ make deps
 
 ### 3) Set environment variables
 ```bash
-make deps
+make env
 ```
 Fill the file with your valid data
 
