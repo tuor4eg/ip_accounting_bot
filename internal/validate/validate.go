@@ -1,27 +1,11 @@
 package validate
 
 import (
-	"errors"
 	"fmt"
 	"slices"
 	"time"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/domain"
-)
-
-var (
-	ErrInvalidUserID      = errors.New("userID must be positive")
-	ErrInvalidAmount      = errors.New("amount must be positive")
-	ErrNoAllowedValues    = errors.New("no allowed values")
-	ErrNotAllowed         = errors.New("value not allowed")
-	ErrInvalidDateRange   = errors.New("invalid date range")
-	ErrInvalidDateUTC     = errors.New("date is not UTC")
-	ErrInvalidPaymentType = errors.New("invalid payment type")
-	ErrInvalidTransport   = errors.New("invalid transport")
-	ErrInvalidExternalID  = errors.New("invalid external ID")
-	ErrInvalidDate        = errors.New("invalid date")
-	ErrEmptyString        = errors.New("empty string")
-	ErrNotFound           = errors.New("not found")
 )
 
 func IsUTC(t time.Time) bool { _, off := t.Zone(); return off == 0 }

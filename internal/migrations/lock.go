@@ -2,17 +2,11 @@ package migrations
 
 import (
 	"context"
-	"errors"
 	"hash/fnv"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
-)
-
-var (
-	ErrInvalidPool = errors.New("invalid pool")
-	ErrEmptyName   = errors.New("empty name")
 )
 
 // UnlockFunc releases the advisory lock acquired by AcquireAdvisoryLock.

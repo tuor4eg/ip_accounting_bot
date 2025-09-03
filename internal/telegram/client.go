@@ -16,23 +16,6 @@ type response[T any] struct {
 	Description string `json:"description,omitempty"`
 }
 
-type APIError struct {
-	Status      int
-	Description string
-}
-
-func (e APIError) Error() string {
-	if e.Status != 0 && e.Description != "" {
-		return fmt.Sprintf("Telegram API: Status=%d, %s", e.Status, e.Description)
-	}
-
-	if e.Description != "" {
-		return fmt.Sprintf("Telegram API: %s", e.Description)
-	}
-
-	return "Telegram API error"
-}
-
 type Client struct {
 	token   string
 	baseURL string

@@ -22,6 +22,60 @@
 - In-memory store for local tests
 - Telegram Bot API
 
+## Code Style
+
+### Package Organization
+Each package should follow a consistent structure with separate files for different concerns:
+
+- **`types.go`** - Contains all type definitions, structs, and interfaces for the package
+- **`errors.go`** - Contains all error definitions and custom error types
+- **Main files** - Contain only business logic, functions, and methods
+
+### Code Separation Rules
+- **Never** define types or errors in executable files (files with business logic)
+- **Always** move types to `types.go` and errors to `errors.go`
+- Keep main files focused on functionality, not data structure definitions
+- Use clear, descriptive names for types and error variables
+- Add comprehensive comments for complex types and error scenarios
+
+### Benefits
+- **Maintainability**: Easy to locate and modify types/errors
+- **Readability**: Clear separation of concerns
+- **Consistency**: Uniform structure across all packages
+- **Documentation**: Self-documenting code organization
+
+### Example Package Structure
+```
+internal/service/
+├── types.go          # All type definitions
+├── errors.go         # All error definitions  
+├── income.go         # Business logic only
+├── payment.go        # Business logic only
+└── total.go          # Business logic only
+```
+
+**Good** - types.go:
+```go
+// IncomeService handles income-related business logic
+type IncomeService struct {
+    store IncomeStore
+}
+```
+
+**Bad** - income.go:
+```go
+// ❌ Don't define types in business logic files
+type IncomeService struct {
+    store IncomeStore
+}
+```
+
+### When to Create These Files
+- **`types.go`** - Create when package has structs, interfaces, or custom types
+- **`errors.go`** - Create when package defines custom errors or error constants
+- **Don't create empty files** - Only create if there are actual types/errors to define
+- **Follow Go conventions** - Use descriptive names and proper documentation
+
 ## Installation & Run
 
 ### 1) Clone the repository
@@ -73,12 +127,14 @@ ip_accounting_bot/
 ├── internal/
 │   ├── app/
 │   │   ├── app.go                           # Main application logic and runner management
+│   │   ├── errors.go                        # Application error definitions
 │   │   ├── handle_telegram_update.go        # Telegram update processing logic
 │   │   ├── run_telegram_polling.go          # Telegram polling implementation
 │   │   ├── runner.go                        # Runner interface and concurrent execution
 │   │   ├── service.go                       # Service layer interface and implementation
 │   │   ├── store.go                         # Storage layer interface and implementation
-│   │   └── telegram_runner.go               # Telegram bot runner implementation
+│   │   ├── telegram_runner.go               # Telegram bot runner implementation
+│   │   └── types.go                         # Application type definitions
 │   ├── bot/
 │   │   ├── deps.go                          # Bot dependencies and initialization
 │   │   ├── errors.go                        # Bot error handling and custom errors
@@ -95,29 +151,41 @@ ip_accounting_bot/
 │   │   ├── parse.go                         # Message parsing utilities
 │   │   ├── router_dispatch.go               # Message routing and dispatch logic
 │   │   ├── text.go                          # Bot text messages and templates
+│   │   ├── types.go                         # Bot type definitions and interfaces
 │   │   ├── validate.go                      # Bot-specific validation
 │   │   └── router_dispatch.go               # Message routing and dispatch logic
 │   ├── config/
-│   │   └── config.go                        # Configuration loading from environment
+│   │   ├── config.go                        # Configuration loading from environment
+│   │   ├── errors.go                        # Configuration error definitions
+│   │   └── types.go                         # Configuration type definitions
 │   ├── crypto/
-│   │   └── crypto.go                        # Cryptographic utilities and functions
+│   │   ├── crypto.go                        # Cryptographic utilities and functions
+│   │   ├── errors.go                        # Cryptographic error definitions
+│   │   └── types.go                         # Cryptographic type definitions
 │   ├── cryptostore/
 │   │   ├── base.go                          # Base cryptographic storage implementation
+│   │   ├── errors.go                        # Cryptographic storage error definitions
 │   │   ├── interface.go                     # Cryptographic storage interface
-│   │   └── README.md                        # Cryptographic storage documentation
+│   │   ├── README.md                        # Cryptographic storage documentation
+│   │   └── types.go                         # Cryptographic storage type definitions
 │   ├── domain/
 │   │   ├── const.go                         # Domain constants and definitions
-│   │   └── totals.go                        # Domain totals and aggregates logic
+│   │   ├── totals.go                        # Domain totals and aggregates logic
+│   │   └── types.go                         # Domain type definitions
 │   ├── logging/
 │   │   ├── logging.go                       # Logging configuration and setup
 │   │   └── pkglogging.go                    # Package-level logging utilities
 │   ├── migrations/
 │   │   ├── embed.go                         # SQL migrations embedding
+│   │   ├── errors.go                        # Migration error definitions
 │   │   ├── lock.go                          # Database migration locking mechanism
+│   │   ├── lock_errors.go                   # Lock mechanism error definitions
 │   │   ├── runner.go                        # Migration execution logic
+│   │   ├── types.go                         # Migration type definitions
 │   │   └── sql/
 │   │       └── 0001_init.up.sql             # Initial database schema
 │   ├── money/
+│   │   ├── errors.go                        # Money error definitions
 │   │   ├── format.go                        # Money formatting utilities
 │   │   ├── format_test.go                   # Money formatting tests
 │   │   ├── parse.go                         # Money parsing utilities
@@ -130,29 +198,36 @@ ip_accounting_bot/
 │   ├── service/
 │   │   ├── income.go                        # Income business logic service
 │   │   ├── payment.go                       # Payment business logic service
-│   │   └── total.go                         # Total calculation service
+│   │   ├── total.go                         # Total calculation service
+│   │   └── types.go                         # Service type definitions
 │   ├── storage/
 │   │   ├── memstore/
 │   │   │   ├── base.go                      # In-memory storage base implementation
 │   │   │   ├── identities.go                # In-memory user identity storage
 │   │   │   ├── incomes.go                   # In-memory income data storage
-│   │   │   └── payments.go                  # In-memory payments data storage
+│   │   │   ├── payments.go                  # In-memory payments data storage
+│   │   │   └── types.go                     # In-memory storage type definitions
 │   │   └── postgres/
 │   │       ├── base.go                      # Base database connection and operations
+│   │       ├── errors.go                    # PostgreSQL error definitions
 │   │       ├── identities.go                # User identity storage operations
 │   │       ├── incomes.go                   # Income data storage operations
-│   │       └── payments.go                  # PostgreSQL payments data storage
+│   │       ├── payments.go                  # PostgreSQL payments data storage
+│   │       └── types.go                     # PostgreSQL storage type definitions
 │   ├── tax/
 │   │   ├── policy.go                        # Tax policy interface and implementation
 │   │   ├── policy_test.go                   # Tax policy tests
 │   │   ├── static_default.go                # Default static tax policy
 │   │   ├── tax.go                           # Tax calculation logic
-│   │   └── tax_test.go                      # Tax calculation tests
+│   │   ├── tax_test.go                      # Tax calculation tests
+│   │   └── types.go                         # Tax type definitions
 │   ├── telegram/
 │   │   ├── client.go                        # Telegram Bot API HTTP client
+│   │   ├── errors.go                        # Telegram error definitions
 │   │   ├── types.go                         # Telegram API data structures
 │   │   └── updates.go                       # Telegram API methods (getUpdates, sendMessage)
 │   └── validate/
+│       ├── errors.go                        # Validation error definitions
 │       ├── validate.go                      # Data validation utilities
 │       └── wrap.go                          # Validation wrapper functions
 ├── go.mod                                   # Go module definition and dependencies
@@ -179,12 +254,14 @@ ip_accounting_bot/
 
 #### Application Core
 - **`internal/app/app.go`** - Main application logic, manages registration and execution of various components (runners)
+- **`internal/app/errors.go`** - Application error definitions and error handling
 - **`internal/app/handle_telegram_update.go`** - Telegram update processing logic and message handling
 - **`internal/app/run_telegram_polling.go`** - Telegram polling implementation for receiving updates
 - **`internal/app/runner.go`** - Runner interface and function for concurrent execution of all registered components
 - **`internal/app/service.go`** - Service layer interface and implementation for business logic
 - **`internal/app/store.go`** - Storage layer interface and implementation for data persistence
 - **`internal/app/telegram_runner.go`** - Telegram bot implementation, processes incoming messages and sends responses
+- **`internal/app/types.go`** - Application type definitions and structures
 
 #### Bot Handlers
 - **`internal/bot/deps.go`** - Bot dependencies and initialization logic
@@ -202,12 +279,16 @@ ip_accounting_bot/
 - **`internal/bot/parse.go`** - Message parsing utilities for extracting commands and parameters
 - **`internal/bot/router_dispatch.go`** - Message routing and dispatch logic to appropriate handlers
 - **`internal/bot/text.go`** - Bot text messages, templates and localization
+- **`internal/bot/types.go`** - Bot type definitions, interfaces and dependency structures
 - **`internal/bot/validate.go`** - Bot-specific validation functions
 
 #### Configuration & Domain
 - **`internal/config/config.go`** - Configuration loading from environment variables with .env file support
+- **`internal/config/errors.go`** - Configuration error definitions and error handling
+- **`internal/config/types.go`** - Configuration type definitions and structures
 - **`internal/domain/const.go`** - Domain constants and business logic definitions
 - **`internal/domain/totals.go`** - Domain totals and aggregates logic for calculations
+- **`internal/domain/types.go`** - Domain type definitions and structures
 
 #### Logging
 - **`internal/logging/logging.go`** - Logging configuration and setup
@@ -215,11 +296,15 @@ ip_accounting_bot/
 
 #### Database & Migrations
 - **`internal/migrations/embed.go`** - SQL migrations embedding for Go binary
+- **`internal/migrations/errors.go`** - Migration error definitions and error handling
 - **`internal/migrations/lock.go`** - Database migration locking mechanism to prevent concurrent migrations
+- **`internal/migrations/lock_errors.go`** - Lock mechanism error definitions and error handling
 - **`internal/migrations/runner.go`** - Migration execution logic and version management
+- **`internal/migrations/types.go`** - Migration type definitions and structures
 - **`internal/migrations/sql/0001_init.up.sql`** - Initial database schema creation
 
 #### Business Logic
+- **`internal/money/errors.go`** - Money error definitions and error handling
 - **`internal/money/format.go`** - Money formatting utilities for displaying currency amounts
 - **`internal/money/format_test.go`** - Tests for money formatting utilities
 - **`internal/money/parse.go`** - Money parsing utilities for handling currency amounts
@@ -231,34 +316,45 @@ ip_accounting_bot/
 - **`internal/service/income.go`** - Income business logic service layer
 - **`internal/service/payment.go`** - Payment business logic service layer
 - **`internal/service/total.go`** - Total calculation and aggregation service
+- **`internal/service/types.go`** - Service type definitions and structures
 - **`internal/tax/policy.go`** - Tax policy interface and implementation
 - **`internal/tax/policy_test.go`** - Tests for tax policy implementation
 - **`internal/tax/static_default.go`** - Default static tax policy implementation
 - **`internal/tax/tax.go`** - Tax calculation logic and business rules
 - **`internal/tax/tax_test.go`** - Tests for tax calculation logic
+- **`internal/tax/types.go`** - Tax type definitions and structures
 
 #### Cryptographic & Security
 - **`internal/crypto/crypto.go`** - Cryptographic utilities and functions for security features
+- **`internal/crypto/errors.go`** - Cryptographic error definitions and error handling
+- **`internal/crypto/types.go`** - Cryptographic type definitions and structures
 - **`internal/cryptostore/base.go`** - Base cryptographic storage implementation
+- **`internal/cryptostore/errors.go`** - Cryptographic storage error definitions
 - **`internal/cryptostore/interface.go`** - Cryptographic storage interface definition
 - **`internal/cryptostore/README.md`** - Documentation for cryptographic storage system
+- **`internal/cryptostore/types.go`** - Cryptographic storage type definitions
 
 #### Data Storage
 - **`internal/storage/memstore/base.go`** - In-memory storage base implementation for development/testing
 - **`internal/storage/memstore/identities.go`** - In-memory user identity storage operations
 - **`internal/storage/memstore/incomes.go`** - In-memory income data storage operations
 - **`internal/storage/memstore/payments.go`** - In-memory payments data storage operations
+- **`internal/storage/memstore/types.go`** - In-memory storage type definitions
 - **`internal/storage/postgres/base.go`** - Base database connection and common operations
+- **`internal/storage/postgres/errors.go`** - PostgreSQL error definitions and error handling
 - **`internal/storage/postgres/identities.go`** - User identity storage operations
 - **`internal/storage/postgres/incomes.go`** - Income data storage operations
 - **`internal/storage/postgres/payments.go`** - PostgreSQL payments data storage operations
+- **`internal/storage/postgres/types.go`** - PostgreSQL storage type definitions
 
 #### Telegram Integration
 - **`internal/telegram/client.go`** - HTTP client for Telegram Bot API, includes error handling and JSON parsing
+- **`internal/telegram/errors.go`** - Telegram error definitions and error handling
 - **`internal/telegram/types.go`** - Data structures for working with Telegram API (User, Chat, Message, Update)
 - **`internal/telegram/updates.go`** - Methods for getting updates and sending messages via Telegram Bot API
 
 #### Validation
+- **`internal/validate/errors.go`** - Validation error definitions and error handling
 - **`internal/validate/validate.go`** - Data validation utilities and validation functions
 - **`internal/validate/wrap.go`** - Validation wrapper functions for common validation patterns
 

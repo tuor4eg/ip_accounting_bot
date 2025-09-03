@@ -7,19 +7,8 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
-	"errors"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
-)
-
-type AEADBox struct {
-	aead cipher.AEAD
-}
-
-var (
-	ErrInvalidKey         = errors.New("key must be 32 bytes")
-	ErrCipherTooShort     = errors.New("ciphertext too short")
-	ErrInvalidInt64Length = errors.New("invalid int64 length")
 )
 
 // NewAEADBox creates an AES-GCM instance using the provided 32-byte key.

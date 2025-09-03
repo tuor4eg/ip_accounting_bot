@@ -11,14 +11,6 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-// TotalService holds functional deps to stay storage-agnostic.
-type TotalService struct {
-	getUserScheme func(ctx context.Context, userID int64) (domain.TaxScheme, error)
-	sumIncomes    func(ctx context.Context, userID int64, from, to time.Time) (int64, error)
-	sumPayments   func(ctx context.Context, userID int64, from, to time.Time) (int64, int64, error)
-	provider      tax.Provider
-}
-
 // NewTotalService wires functional dependencies (no direct store coupling).
 func NewTotalService(
 	getUserScheme func(ctx context.Context, userID int64) (domain.TaxScheme, error),

@@ -10,28 +10,6 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-type Policy struct {
-	BaseRateBP      int64
-	ExcessThreshold int64
-	ExcessRateBP    int64
-}
-
-type Provider interface {
-	// ForDate returns policy for a tax scheme at a given moment.
-	// Selection uses inclusive bounds on version intervals.
-	ForDate(scheme domain.TaxScheme, date time.Time) (Policy, error)
-}
-
-type VersionedPolicy struct {
-	ValidFrom time.Time  // inclusive
-	ValidTo   *time.Time // inclusive, nil = open-ended
-	Policy    Policy
-}
-
-type StaticProvider struct {
-	versions map[string][]VersionedPolicy // key = scheme code, e.g., "usn_6"
-}
-
 func NewStaticProvider(versions map[string][]VersionedPolicy) *StaticProvider {
 	out := make(map[string][]VersionedPolicy)
 

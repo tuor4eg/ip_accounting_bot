@@ -1,4 +1,3 @@
-// internal/domain/totals.go
 package domain
 
 import "time"

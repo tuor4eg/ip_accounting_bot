@@ -1,26 +1,10 @@
 package config
 
 import (
-	"errors"
 	"os"
 
 	"github.com/joho/godotenv"
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
-)
-
-type Config struct {
-	TelegramToken string `env:"TELEGRAM_TOKEN"`
-	LogLevel      string `env:"LOG_LEVEL"`
-	LogFormat     string `env:"LOG_FORMAT"`
-	DatabaseURL   string `env:"DATABASE_URL"`
-	HMACKey       string `env:"HMAC_KEY"`
-	AEADKey       string `env:"AEAD_KEY"`
-}
-
-var (
-	ErrTelegramTokenNotSet = errors.New("TELEGRAM_TOKEN is not set")
-	ErrHMACKeyNotSet       = errors.New("HMAC_KEY is not set")
-	ErrAEADKeyNotSet       = errors.New("AEAD_KEY is not set")
 )
 
 func Load() (*Config, error) {

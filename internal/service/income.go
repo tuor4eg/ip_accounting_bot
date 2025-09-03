@@ -17,10 +17,6 @@ type IncomeStore interface {
 	SumIncomes(ctx context.Context, userID int64, from, to time.Time) (int64, error)
 }
 
-type IncomeService struct {
-	store IncomeStore
-}
-
 func NewIncomeService(store IncomeStore) *IncomeService {
 	return &IncomeService{store: store}
 }

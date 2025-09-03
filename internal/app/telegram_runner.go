@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"time"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
@@ -18,12 +17,6 @@ const (
 	codeTGSendFailed         = "tg_send_failed"
 	codeTGHandleUpdateFailed = "tg_handle_update_failed"
 )
-
-type TelegramRunner struct {
-	tg      *telegram.Client
-	log     *slog.Logger
-	botDeps *bot.BotDeps
-}
 
 func NewTelegramRunner(tg *telegram.Client) *TelegramRunner {
 	tgRunner := &TelegramRunner{

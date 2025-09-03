@@ -2,7 +2,6 @@ package migrations
 
 import (
 	"context"
-	"errors"
 	"io/fs"
 	"path/filepath"
 	"regexp"
@@ -15,18 +14,6 @@ import (
 )
 
 var reMigration = regexp.MustCompile(`^(?P<ver>\d{4,})_(?P<name>[a-z0-9_]+?)(?P<conc>_concurrently)?\.up\.sql$`)
-
-var (
-	ErrInvalidFS                 = errors.New("fs is nil")
-	ErrDuplicateMigrationVersion = errors.New("duplicate migration version")
-)
-
-type Migration struct {
-	Version    int64
-	Concurrent bool
-	Path       string
-	Name       string
-}
 
 func EnsureMigrationsTable(ctx context.Context, pool *pgxpool.Pool) error {
 	const op = "migrations.EnsureMigrationsTable"

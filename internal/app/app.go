@@ -2,32 +2,12 @@ package app
 
 import (
 	"context"
-	"errors"
-	"log/slog"
 	"time"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
 	"github.com/tuor4eg/ip_accounting_bot/internal/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
-)
-
-type App struct {
-	cfg     *config.Config
-	runners []Runner
-	log     *slog.Logger
-	store   Store
-	income  IncomeUsecase
-	payment PaymentUsecase
-	total   TotalUsecase
-}
-
-var (
-	ErrStoreNotSet                        = errors.New("store is not set")
-	ErrIncomeUsecaseNotSet                = errors.New("income usecase is not set")
-	ErrStoreDoesNotImplementIdentityStore = errors.New("store does not implement IdentityStore")
-	ErrPaymentUsecaseNotSet               = errors.New("payment usecase is not set")
-	ErrTotalUsecaseNotSet                 = errors.New("total usecase is not set")
 )
 
 func New(cfg *config.Config) *App {

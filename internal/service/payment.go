@@ -18,10 +18,6 @@ type PaymentStore interface {
 	SumPayments(ctx context.Context, userID int64, from, to time.Time) (int64, int64, error)
 }
 
-type PaymentService struct {
-	store PaymentStore
-}
-
 func NewPaymentService(store PaymentStore) *PaymentService {
 	return &PaymentService{store: store}
 }

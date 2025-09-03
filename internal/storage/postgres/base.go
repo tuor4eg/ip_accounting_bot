@@ -2,34 +2,16 @@ package postgres
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/tuor4eg/ip_accounting_bot/internal/cryptostore"
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-type Store struct {
-	cryptostore.BaseCryptoStore // Embed crypto capabilities
-	Pool                        *pgxpool.Pool
-}
-
 const (
 	PingTimeOutSec = 5
-)
-
-var (
-	ErrEmptyDSN    = errors.New("dsn is empty")
-	ErrEmptyPool   = errors.New("pool is empty")
-	ErrParseConfig = errors.New("parse config error")
-	ErrPoolCreate  = errors.New("pool create error")
-	ErrPing        = errors.New("ping error")
-	ErrBeginTx     = errors.New("begin tx error")
-	ErrTx          = errors.New("tx error")
-	ErrTxCommit    = errors.New("tx commit error")
 )
 
 // Open initializes a pgx pool from DSN and verifies the connection with Ping.

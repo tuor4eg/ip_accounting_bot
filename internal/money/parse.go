@@ -1,7 +1,6 @@
 package money
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"regexp"
@@ -10,13 +9,6 @@ import (
 	"unicode"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
-)
-
-var (
-	// ErrInvalidAmount is returned when the input cannot be parsed as a money amount.
-	ErrInvalidAmount = errors.New("invalid amount")
-	// ErrOverflow is returned when the parsed number would overflow int64.
-	ErrOverflow = errors.New("amount overflow")
 )
 
 // ParseAmount converts human input like "1 234,56", "1.234,56", "1234.5", "1234", "1 234 ₽"
@@ -115,7 +107,7 @@ func parseRublesTokens(s string, reRub *regexp.Regexp) (rub int64, ok bool, err 
 	for _, m := range reRub.FindAllStringSubmatch(s, -1) {
 		n, err := parseNumberWithSeparators(m[1])
 		if err != nil {
-			return 0, false, fmt.Errorf("parse rub: %w", ErrInvalidAmount)
+			return 0, false, fmt.Errorf("parse rub: %w", ErrInvalidFormat)
 		}
 
 		if rub > math.MaxInt64-n {
@@ -133,7 +125,7 @@ func parseKopecksTokens(s string, reKop *regexp.Regexp) (kop int64, ok bool, err
 	for _, m := range reKop.FindAllStringSubmatch(s, -1) {
 		n, err := strconv.ParseInt(m[1], 10, 64)
 		if err != nil {
-			return 0, false, fmt.Errorf("parse kop: %w", ErrInvalidAmount)
+			return 0, false, fmt.Errorf("parse kop: %w", ErrInvalidFormat)
 		}
 
 		if kop > math.MaxInt64-n {
@@ -193,7 +185,7 @@ func findStandaloneKopecks(s string, rub int64) int64 {
 func parseGenericNumber(s string) (int64, error) {
 	s = stripCurrencyTokens(s)
 	if s == "" {
-		return 0, ErrInvalidAmount
+		return 0, ErrInvalidFormat
 	}
 
 	runes := []rune(s)
@@ -259,7 +251,7 @@ func parseIntegerOnly(runes []rune) (int64, error) {
 		} else if ch == '_' || ch == '\'' || unicode.IsSpace(ch) {
 			continue
 		} else {
-			return 0, ErrInvalidAmount
+			return 0, ErrInvalidFormat
 		}
 	}
 	if total > math.MaxInt64/100 {
@@ -333,7 +325,7 @@ func parseDecimalNumber(runes []rune, sepPos int) (int64, error) {
 		case ch == '.' || ch == ',':
 			if i == sepPos {
 				if decimalMode {
-					return 0, ErrInvalidAmount
+					return 0, ErrInvalidFormat
 				}
 				decimalMode = true
 			}
@@ -341,7 +333,7 @@ func parseDecimalNumber(runes []rune, sepPos int) (int64, error) {
 			if ch == '_' || ch == '\'' || unicode.IsSpace(ch) {
 				continue
 			}
-			return 0, ErrInvalidAmount
+			return 0, ErrInvalidFormat
 		}
 	}
 
@@ -364,7 +356,7 @@ func scaleToKopecks(total int64, decimals int) (int64, error) {
 	case 2:
 		return total, nil
 	default:
-		return 0, ErrInvalidAmount
+		return 0, ErrInvalidFormat
 	}
 }
 
