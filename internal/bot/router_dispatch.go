@@ -13,8 +13,7 @@ func DispatchCommand(
 	self string,
 	transport string,
 	externalID string,
-	addDeps AddDeps,
-	totalDeps TotalDeps,
+	deps *BotDeps,
 ) (reply string, handled bool, err error) {
 	const op = "bot.DispatchCommand"
 
@@ -30,44 +29,44 @@ func DispatchCommand(
 	case "help":
 		return HandleHelp(ctx), true, nil
 	case "add":
-		reply, err := HandleAdd(ctx, addDeps, transport, externalID, args)
+		reply, err := HandleAdd(ctx, deps, transport, externalID, args)
 		if err != nil {
 			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
 	case "undo":
-		reply, err := HandleUndo(ctx, addDeps, transport, externalID, args)
+		reply, err := HandleUndo(ctx, deps, transport, externalID, args)
 		if err != nil {
 			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
 	case "add_contrib":
-		reply, err := HandleAddContrib(ctx, addDeps, transport, externalID, args)
+		reply, err := HandleAddContrib(ctx, deps, transport, externalID, args)
 		if err != nil {
 			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
 	case "undo_contrib":
-		reply, err := HandleUndoContrib(ctx, addDeps, transport, externalID, args)
+		reply, err := HandleUndoContrib(ctx, deps, transport, externalID, args)
 		if err != nil {
 			fmt.Println("error in undo_contrib", err)
 			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
 	case "add_advance":
-		reply, err := HandleAddAdvance(ctx, addDeps, transport, externalID, args)
+		reply, err := HandleAddAdvance(ctx, deps, transport, externalID, args)
 		if err != nil {
 			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
 	case "undo_advance":
-		reply, err := HandleUndoAdvance(ctx, addDeps, transport, externalID, args)
+		reply, err := HandleUndoAdvance(ctx, deps, transport, externalID, args)
 		if err != nil {
 			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
 	case "total":
-		reply, err := HandleTotal(ctx, totalDeps, transport, externalID, args)
+		reply, err := HandleTotal(ctx, deps, transport, externalID, args)
 		if err != nil {
 			return "", true, validate.Wrap(op, err)
 		}

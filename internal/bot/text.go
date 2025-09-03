@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -9,11 +10,15 @@ import (
 
 // ------------------ COMMON MESSAGES ------------------
 func UnknownCommandText() string {
-	return "Неизвестная команда. Напишите /help"
+	var b strings.Builder
+	b.WriteString("❓ Неизвестная команда. Напишите /help для справки.")
+	return b.String()
 }
 
 func ErrorText() string {
-	return "Ошибка при обработке команды. Попробуйте позже."
+	var b strings.Builder
+	b.WriteString("⚠️ Ошибка при обработке команды. Попробуйте позже.")
+	return b.String()
 }
 
 // ------------------ START MESSAGE ------------------
@@ -21,21 +26,22 @@ func ErrorText() string {
 // StartText returns the greeting and quick usage guide for the bot.
 // Text is static and transport-agnostic; actual sending is done by the router/runner.
 func StartText() string {
-	return "" +
-		"Привет! Я помогу вести учёт доходов ИП (УСН 6%).\n\n" +
-		"Команды:\n" +
-		"• /add <сумма> [комментарий] — добавить поступление\n" +
-		"  Примеры: /add 1000\n" +
-		"           /add 1 234,56 заказ #42\n" +
-		"           /add 10р 50к аванс\n" +
-		"• /add_contrib <сумма> [комментарий] — добавить взнос\n" +
-		"• /add_advance <сумма> [комментарий] — добавить авансовый платеж\n" +
-		"• /undo — отменить последнее поступление за квартал\n" +
-		"• /undo_contrib — отменить последний взнос\n" +
-		"• /undo_advance — отменить последний авансовый платеж\n" +
-		"• /total — итоги за текущий квартал (сумма и налог 6%)\n" +
-		"• /help — подробная справка\n\n" +
-		"Формат суммы: без знака минус, поддерживаются «1 234,56», «1234.56», «10р 50к»."
+	var b strings.Builder
+	b.WriteString("👋 Привет! Я помогу вести учёт доходов ИП (УСН 6%).\n\n")
+	b.WriteString("📋 Основные команды:\n")
+	b.WriteString("• /add [сумма] [комментарий] — добавить поступление\n")
+	b.WriteString("  Примеры: /add 1000\n")
+	b.WriteString("           /add 1 234,56 заказ #42\n")
+	b.WriteString("           /add 10р 50к аванс\n")
+	b.WriteString("• /add_contrib [сумма] [комментарий] — добавить взнос\n")
+	b.WriteString("• /add_advance [сумма] [комментарий] — добавить авансовый платеж\n")
+	b.WriteString("• /undo — отменить последнее поступление за квартал\n")
+	b.WriteString("• /undo_contrib — отменить последний взнос\n")
+	b.WriteString("• /undo_advance — отменить последний авансовый платеж\n")
+	b.WriteString("• /total — итоги за текущий квартал (сумма и налог 6%)\n")
+	b.WriteString("• /help — подробная справка\n\n")
+	b.WriteString("💡 Формат суммы: без знака минус, поддерживаются «1 234,56», «1234.56», «10р 50к».")
+	return b.String()
 }
 
 // ------------------ HELP MESSAGE ------------------
@@ -43,58 +49,53 @@ func StartText() string {
 // HelpText returns a longer help message for users.
 // Text is static and transport-agnostic.
 func HelpText() string {
-	return "" +
-		"Справка\n" +
-		"\n" +
-		"Команды:\n" +
-		"• /add <сумма> [комментарий]\n" +
-		"  Добавляет поступление в базу. Сумма — без минуса, в рублях и копейках.\n" +
-		"  Примеры:\n" +
-		"   /add 1000\n" +
-		"   /add 1 234,56 заказ #42\n" +
-		"   /add 10р 50к аванс\n" +
-		"\n" +
-		"• /add_contrib <сумма> [комментарий]\n" +
-		"  Добавляет взнос в базу. Сумма — аналогично /add.\n" +
-		"\n" +
-		"• /add_advance <сумма> [комментарий]\n" +
-		"  Добавляет авансовый платеж в базу. Сумма — аналогично /add.\n" +
-		"\n" +
-		"• /undo\n" +
-		"  Отменяет последнее поступление за квартал.\n" +
-		"\n" +
-		"• /undo_contrib\n" +
-		"  Отменяет последний взнос.\n" +
-		"\n" +
-		"• /undo_advance\n" +
-		"  Отменяет последний авансовый платеж.\n" +
-		"\n" +
-		"• /total\n" +
-		"  Показывает сумму доходов и налог 6% за текущий квартал.\n" +
-		"\n" +
-		"• /start\n" +
-		"  Краткая инструкция.\n" +
-		"\n" +
-		"Формат суммы:\n" +
-		"  • Допускаются пробелы/точки/запятые как разделители тысяч.\n" +
-		"  • Последняя точка или запятая — десятичный разделитель (до 2 знаков).\n" +
-		"  • Понимает записи вида «10р 50к», «10 руб 50 коп».\n" +
-		"  • Отрицательные значения не принимаются.\n" +
-		"\n" +
-		"Механика:\n" +
-		"  • Налог рассчитывается как 6% от суммы квартала (округление вниз).\n" +
-		"  • Квартал определяется по UTC датам (включительно).\n"
+	var b strings.Builder
+	b.WriteString("📚 Справка\n\n")
+	b.WriteString("🔧 Команды:\n")
+	b.WriteString("• /add [сумма] [комментарий]\n")
+	b.WriteString("  Добавляет поступление в базу. Сумма — без минуса, в рублях и копейках.\n")
+	b.WriteString("  Примеры:\n")
+	b.WriteString("   /add 1000\n")
+	b.WriteString("   /add 1 234,56 заказ #42\n")
+	b.WriteString("   /add 10р 50к аванс\n\n")
+	b.WriteString("• /add_contrib [сумма] [комментарий]\n")
+	b.WriteString("  Добавляет взнос в базу. Сумма — аналогично /add.\n\n")
+	b.WriteString("• /add_advance [сумма] [комментарий]\n")
+	b.WriteString("  Добавляет авансовый платеж в базу. Сумма — аналогично /add.\n\n")
+	b.WriteString("• /undo\n")
+	b.WriteString("  Отменяет последнее поступление за квартал.\n\n")
+	b.WriteString("• /undo_contrib\n")
+	b.WriteString("  Отменяет последний взнос.\n\n")
+	b.WriteString("• /undo_advance\n")
+	b.WriteString("  Отменяет последний авансовый платеж.\n\n")
+	b.WriteString("• /total\n")
+	b.WriteString("  Показывает сумму доходов и налог 6% за текущий квартал.\n\n")
+	b.WriteString("• /start\n")
+	b.WriteString("  Краткая инструкция.\n\n")
+	b.WriteString("💰 Формат суммы:\n")
+	b.WriteString("  • Допускаются пробелы/точки/запятые как разделители тысяч.\n")
+	b.WriteString("  • Последняя точка или запятая — десятичный разделитель (до 2 знаков).\n")
+	b.WriteString("  • Понимает записи вида «10р 50к», «10 руб 50 коп».\n")
+	b.WriteString("  • Отрицательные значения не принимаются.\n\n")
+	b.WriteString("⚙️ Механика:\n")
+	b.WriteString("  • Налог рассчитывается как 6% от суммы квартала (округление вниз).\n")
+	b.WriteString("  • Квартал определяется по UTC датам (включительно).\n")
+	return b.String()
 }
 
 // ------------------ ADD MESSAGE ------------------
 
 // BadAmountHintText returns a short hint for invalid /add amount input.
 func BadAmountHintText() string {
-	return "Не понял сумму. Примеры: 1000 | 1 234,56 | 10р 50к"
+	var b strings.Builder
+	b.WriteString("❌ Не понял сумму. Примеры: 1000 | 1 234,56 | 10р 50к")
+	return b.String()
 }
 
 func AmountIsZeroText() string {
-	return "Сумма не может быть 0"
+	var b strings.Builder
+	b.WriteString("❌ Сумма не может быть 0")
+	return b.String()
 }
 
 func AddSuccessText(amount int64, at time.Time, note string) string {
@@ -102,10 +103,10 @@ func AddSuccessText(amount int64, at time.Time, note string) string {
 	var b strings.Builder
 	b.WriteString("✅ Добавлено поступление: ")
 	b.WriteString(money.FormatAmountShort(amount))
-	b.WriteString("\nДата: ")
-	b.WriteString(at.Format("2006-01-02"))
+	b.WriteString("\n📅 Дата: ")
+	b.WriteString(at.Format("02.01.2006"))
 	if note != "" {
-		b.WriteString("\nКомментарий: ")
+		b.WriteString("\n💬 Комментарий: ")
 		b.WriteString(note)
 	}
 
@@ -118,13 +119,12 @@ func AddContribSuccessText(amount int64, at time.Time, note string) string {
 	var b strings.Builder
 	b.WriteString("✅ Добавлен взнос: ")
 	b.WriteString(money.FormatAmountShort(amount))
-	b.WriteString("\nДата: ")
-	b.WriteString(at.Format("2006-01-02"))
+	b.WriteString("\n📅 Дата: ")
+	b.WriteString(at.Format("02.01.2006"))
 	if note != "" {
-		b.WriteString("\nКомментарий: ")
+		b.WriteString("\n💬 Комментарий: ")
 		b.WriteString(note)
 	}
-	b.WriteString(note)
 	return b.String()
 }
 
@@ -134,29 +134,63 @@ func AddAdvanceSuccessText(amount int64, at time.Time, note string) string {
 	var b strings.Builder
 	b.WriteString("✅ Добавлен авансовый платеж: ")
 	b.WriteString(money.FormatAmountShort(amount))
-	b.WriteString("\nДата: ")
-	b.WriteString(at.Format("2006-01-02"))
+	b.WriteString("\n📅 Дата: ")
+	b.WriteString(at.Format("02.01.2006"))
 	if note != "" {
-		b.WriteString("\nКомментарий: ")
+		b.WriteString("\n💬 Комментарий: ")
 		b.WriteString(note)
 	}
-	b.WriteString(note)
 	return b.String()
 }
 
 // ------------------ TOTAL MESSAGE ------------------
 
-func TotalText(sum int64, tax int64, qStart time.Time, qEnd time.Time) string {
-
+func TotalText(
+	sum int64, tax int64, qStart time.Time, qEnd time.Time,
+	yearSum int64, yearTax int64,
+	contribSum int64, advanceSum int64,
+	year int, quarter int,
+) string {
 	var b strings.Builder
-	b.WriteString("Сумма за квартал: ")
-	b.WriteString(qStart.Format("2006-01-02"))
+
+	// Quarter section
+	b.WriteString("📅 <b>")
+	b.WriteString(strconv.Itoa(quarter))
+	b.WriteString(" квартал: ")
+	b.WriteString(qStart.Format("02.01.2006"))
 	b.WriteString(" - ")
-	b.WriteString(qEnd.Format("2006-01-02"))
-	b.WriteString("\nСумма: ")
+	b.WriteString(qEnd.Format("02.01.2006"))
+	b.WriteString("</b>")
+	b.WriteString("\n")
+
+	b.WriteString("💰 Поступления: ")
 	b.WriteString(money.FormatAmountShort(sum))
-	b.WriteString("\nНалог: ")
+	b.WriteString("\n")
+
+	b.WriteString("🧾 Налог: ")
 	b.WriteString(money.FormatAmountShort(tax))
+	b.WriteString("\n\n")
+
+	// Year section
+	b.WriteString("📊 <b>Итого за ")
+	b.WriteString(strconv.Itoa(year))
+	b.WriteString(" год:</b>")
+	b.WriteString("\n")
+
+	b.WriteString("💰 Поступления: ")
+	b.WriteString(money.FormatAmountShort(yearSum))
+	b.WriteString("\n")
+
+	b.WriteString("💳 Взносы: ")
+	b.WriteString(money.FormatAmountShort(contribSum))
+	b.WriteString("\n")
+
+	b.WriteString("💸 Авансы: ")
+	b.WriteString(money.FormatAmountShort(advanceSum))
+	b.WriteString("\n")
+
+	b.WriteString("🧾 Налог: ")
+	b.WriteString(money.FormatAmountShort(yearTax))
 
 	return b.String()
 }
@@ -166,19 +200,21 @@ func TotalText(sum int64, tax int64, qStart time.Time, qEnd time.Time) string {
 func UndoSuccessText(amount int64, at time.Time, note string) string {
 	var b strings.Builder
 	b.WriteString("✅ Поступление отменено:\n")
-	b.WriteString("\tСумма: ")
+	b.WriteString("💰 Сумма: ")
 	b.WriteString(money.FormatAmountShort(amount))
-	b.WriteString("\n\tДата: ")
-	b.WriteString(at.Format("2006-01-02"))
+	b.WriteString("\n📅 Дата: ")
+	b.WriteString(at.Format("02.01.2006"))
 	if note != "" {
-		b.WriteString("\n\tКомментарий: ")
+		b.WriteString("\n💬 Комментарий: ")
 		b.WriteString(note)
 	}
 	return b.String()
 }
 
 func UndoNoIncomeText() string {
-	return "Нечего отменять. Нет поступлений за текущий квартал."
+	var b strings.Builder
+	b.WriteString("ℹ️ Нечего отменять. Нет поступлений за текущий квартал.")
+	return b.String()
 }
 
 // ------------------ UNDO CONTRIB MESSAGE ------------------
@@ -186,19 +222,21 @@ func UndoNoIncomeText() string {
 func UndoContribSuccessText(amount int64, at time.Time, note string) string {
 	var b strings.Builder
 	b.WriteString("✅ Взнос отменен:\n")
-	b.WriteString("\tСумма: ")
+	b.WriteString("💰 Сумма: ")
 	b.WriteString(money.FormatAmountShort(amount))
-	b.WriteString("\n\tДата: ")
-	b.WriteString(at.Format("2006-01-02"))
+	b.WriteString("\n📅 Дата: ")
+	b.WriteString(at.Format("02.01.2006"))
 	if note != "" {
-		b.WriteString("\n\tКомментарий: ")
+		b.WriteString("\n💬 Комментарий: ")
 		b.WriteString(note)
 	}
 	return b.String()
 }
 
 func UndoNoContribText() string {
-	return "Нечего отменять. Нет взносов за текущий год."
+	var b strings.Builder
+	b.WriteString("ℹ️ Нечего отменять. Нет взносов за текущий год.")
+	return b.String()
 }
 
 // ------------------ UNDO ADVANCE MESSAGE ------------------
@@ -206,17 +244,19 @@ func UndoNoContribText() string {
 func UndoAdvanceSuccessText(amount int64, at time.Time, note string) string {
 	var b strings.Builder
 	b.WriteString("✅ Авансовый платеж отменен:\n")
-	b.WriteString("\tСумма: ")
+	b.WriteString("💰 Сумма: ")
 	b.WriteString(money.FormatAmountShort(amount))
-	b.WriteString("\n\tДата: ")
-	b.WriteString(at.Format("2006-01-02"))
+	b.WriteString("\n📅 Дата: ")
+	b.WriteString(at.Format("02.01.2006"))
 	if note != "" {
-		b.WriteString("\n\tКомментарий: ")
+		b.WriteString("\n💬 Комментарий: ")
 		b.WriteString(note)
 	}
 	return b.String()
 }
 
 func UndoNoAdvanceText() string {
-	return "Нечего отменять. Нет авансовых платежей за текущий год."
+	var b strings.Builder
+	b.WriteString("ℹ️ Нечего отменять. Нет авансовых платежей за текущий год.")
+	return b.String()
 }

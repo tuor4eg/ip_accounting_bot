@@ -19,6 +19,7 @@ type App struct {
 	store   Store
 	income  IncomeUsecase
 	payment PaymentUsecase
+	total   TotalUsecase
 }
 
 var (
@@ -26,6 +27,7 @@ var (
 	ErrIncomeUsecaseNotSet                = errors.New("income usecase is not set")
 	ErrStoreDoesNotImplementIdentityStore = errors.New("store does not implement IdentityStore")
 	ErrPaymentUsecaseNotSet               = errors.New("payment usecase is not set")
+	ErrTotalUsecaseNotSet                 = errors.New("total usecase is not set")
 )
 
 func New(cfg *config.Config) *App {
@@ -39,41 +41,35 @@ func (a *App) Register(runner Runner) {
 	a.runners = append(a.runners, runner)
 }
 
-func (a *App) BotDeps() (add bot.AddDeps, total bot.TotalDeps, err error) {
+func (a *App) BotDeps() (*bot.BotDeps, error) {
 	op := "app.BotDeps"
 
 	if a.store == nil {
-		return add, total, validate.Wrap(op, ErrStoreNotSet)
+		return nil, validate.Wrap(op, ErrStoreNotSet)
 	}
 
 	if a.income == nil {
-		return add, total, validate.Wrap(op, ErrIncomeUsecaseNotSet)
+		return nil, validate.Wrap(op, ErrIncomeUsecaseNotSet)
 	}
 
 	if a.payment == nil {
-		return add, total, validate.Wrap(op, ErrPaymentUsecaseNotSet)
+		return nil, validate.Wrap(op, ErrPaymentUsecaseNotSet)
 	}
 
-	ids, ok := a.store.(bot.IdentityStore)
+	if a.total == nil {
+		return nil, validate.Wrap(op, ErrTotalUsecaseNotSet)
+	}
+
+	// Check that store implements the required interface
+	ids, ok := a.store.(interface {
+		UpsertIdentity(ctx context.Context, transport, externalID string, chatID int64) (int64, error)
+	})
 
 	if !ok {
-		return add, total, validate.Wrap(op, ErrStoreDoesNotImplementIdentityStore)
+		return nil, validate.Wrap(op, ErrStoreDoesNotImplementIdentityStore)
 	}
 
-	add = bot.AddDeps{
-		Identities: ids,
-		Income:     a.income,
-		Payment:    a.payment,
-		Now:        time.Now,
-	}
-
-	total = bot.TotalDeps{
-		Identities: ids,
-		QuarterSum: a.income,
-		Now:        time.Now,
-	}
-
-	return add, total, nil
+	return bot.NewBotDeps(ids, a.income, a.payment, a.total, time.Now), nil
 }
 
 func (a *App) Run(ctx context.Context) error {

@@ -32,8 +32,7 @@ func RunTelegramPolling(
 	self string,
 	client TelegramUpdateGetter,
 	sender TelegramSender,
-	addDeps bot.AddDeps,
-	totalDeps bot.TotalDeps,
+	botDeps *bot.BotDeps,
 ) error {
 	self = NormalizeSelf(self)
 
@@ -63,7 +62,7 @@ func RunTelegramPolling(
 		for _, update := range updates {
 			offset = nextOffset(offset, update.UpdateID)
 
-			if err := HandleTelegramUpdate(ctx, self, update, sender, addDeps, totalDeps); err != nil {
+			if err := HandleTelegramUpdate(ctx, self, update, sender, botDeps); err != nil {
 
 				continue
 			}

@@ -25,8 +25,7 @@ func HandleTelegramUpdate(
 	self string,
 	upd telegram.Update,
 	sender TelegramSender,
-	addDeps bot.AddDeps,
-	totalDeps bot.TotalDeps,
+	botDeps *bot.BotDeps,
 ) error {
 	op := "app.HandleTelegramUpdate"
 
@@ -45,7 +44,7 @@ func HandleTelegramUpdate(
 
 	self = NormalizeSelf(self)
 
-	reply, handled, err := bot.DispatchCommand(ctx, text, self, "telegram", externalID, addDeps, totalDeps)
+	reply, handled, err := bot.DispatchCommand(ctx, text, self, "telegram", externalID, botDeps)
 
 	if !handled {
 		if sendErr := sender.SendMessage(ctx, chatID, bot.UnknownCommandText()); sendErr != nil {

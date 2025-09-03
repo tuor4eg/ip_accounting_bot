@@ -62,6 +62,9 @@ make run-bot
 
 ```
 ip_accounting_bot/
+├── bin/                                     # Compiled binaries
+│   ├── ip_bot                              # Bot binary
+│   └── migrate                              # Migration binary
 ├── cmd/
 │   ├── bot/
 │   │   └── main.go                           # Bot application entry point
@@ -96,8 +99,15 @@ ip_accounting_bot/
 │   │   └── router_dispatch.go               # Message routing and dispatch logic
 │   ├── config/
 │   │   └── config.go                        # Configuration loading from environment
+│   ├── crypto/
+│   │   └── crypto.go                        # Cryptographic utilities and functions
+│   ├── cryptostore/
+│   │   ├── base.go                          # Base cryptographic storage implementation
+│   │   ├── interface.go                     # Cryptographic storage interface
+│   │   └── README.md                        # Cryptographic storage documentation
 │   ├── domain/
-│   │   └── const.go                         # Domain constants and definitions
+│   │   ├── const.go                         # Domain constants and definitions
+│   │   └── totals.go                        # Domain totals and aggregates logic
 │   ├── logging/
 │   │   ├── logging.go                       # Logging configuration and setup
 │   │   └── pkglogging.go                    # Package-level logging utilities
@@ -114,9 +124,13 @@ ip_accounting_bot/
 │   │   └── parse_test.go                    # Money parsing tests
 │   ├── period/
 │   │   ├── quarter.go                       # Quarter period calculations
-│   │   └── quarter_test.go                  # Quarter period tests
+│   │   ├── quarter_test.go                  # Quarter period tests
+│   │   ├── year.go                          # Year period calculations
+│   │   └── year_test.go                     # Year period tests
 │   ├── service/
-│   │   └── income.go                        # Income business logic service
+│   │   ├── income.go                        # Income business logic service
+│   │   ├── payment.go                       # Payment business logic service
+│   │   └── total.go                         # Total calculation service
 │   ├── storage/
 │   │   ├── memstore/
 │   │   │   ├── base.go                      # In-memory storage base implementation
@@ -129,6 +143,9 @@ ip_accounting_bot/
 │   │       ├── incomes.go                   # Income data storage operations
 │   │       └── payments.go                  # PostgreSQL payments data storage
 │   ├── tax/
+│   │   ├── policy.go                        # Tax policy interface and implementation
+│   │   ├── policy_test.go                   # Tax policy tests
+│   │   ├── static_default.go                # Default static tax policy
 │   │   ├── tax.go                           # Tax calculation logic
 │   │   └── tax_test.go                      # Tax calculation tests
 │   ├── telegram/
@@ -150,6 +167,9 @@ ip_accounting_bot/
 ### File Descriptions
 
 #### Project Files
+- **`bin/`** - Directory containing compiled binaries
+  - **`ip_bot`** - Compiled bot application binary
+  - **`migrate`** - Compiled database migration binary
 - **`.gitignore`** - Git ignore rules for Go projects, excludes binaries, test files, coverage reports, and environment files
 - **`Makefile`** - Build automation and development commands
 
@@ -187,6 +207,7 @@ ip_accounting_bot/
 #### Configuration & Domain
 - **`internal/config/config.go`** - Configuration loading from environment variables with .env file support
 - **`internal/domain/const.go`** - Domain constants and business logic definitions
+- **`internal/domain/totals.go`** - Domain totals and aggregates logic for calculations
 
 #### Logging
 - **`internal/logging/logging.go`** - Logging configuration and setup
@@ -205,9 +226,22 @@ ip_accounting_bot/
 - **`internal/money/parse_test.go`** - Tests for money parsing utilities
 - **`internal/period/quarter.go`** - Quarter period calculations and date utilities
 - **`internal/period/quarter_test.go`** - Tests for quarter period calculations
+- **`internal/period/year.go`** - Year period calculations and date utilities
+- **`internal/period/year_test.go`** - Tests for year period calculations
 - **`internal/service/income.go`** - Income business logic service layer
+- **`internal/service/payment.go`** - Payment business logic service layer
+- **`internal/service/total.go`** - Total calculation and aggregation service
+- **`internal/tax/policy.go`** - Tax policy interface and implementation
+- **`internal/tax/policy_test.go`** - Tests for tax policy implementation
+- **`internal/tax/static_default.go`** - Default static tax policy implementation
 - **`internal/tax/tax.go`** - Tax calculation logic and business rules
 - **`internal/tax/tax_test.go`** - Tests for tax calculation logic
+
+#### Cryptographic & Security
+- **`internal/crypto/crypto.go`** - Cryptographic utilities and functions for security features
+- **`internal/cryptostore/base.go`** - Base cryptographic storage implementation
+- **`internal/cryptostore/interface.go`** - Cryptographic storage interface definition
+- **`internal/cryptostore/README.md`** - Documentation for cryptographic storage system
 
 #### Data Storage
 - **`internal/storage/memstore/base.go`** - In-memory storage base implementation for development/testing

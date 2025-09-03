@@ -1,3 +1,4 @@
+// internal/bot/deps.go
 package bot
 
 import (
@@ -7,40 +8,50 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/domain"
 )
 
+// IdentityStore abstracts user identity storage.
 type IdentityStore interface {
-	UpsertIdentity(ctx context.Context, transport, externalID string) (int64, error)
+	UpsertIdentity(ctx context.Context, transport, externalID string, chatID int64) (int64, error)
 }
 
-type IncomeAdder interface {
+// IncomeUsecase abstracts income operations for the bot.
+type IncomeUsecase interface {
 	AddIncome(ctx context.Context, userID int64, at time.Time, amount int64, note string) error
+	UndoLastQuarter(ctx context.Context, userID int64, now time.Time) (amount int64, at time.Time, note string, ok bool, err error)
 }
 
-type PaymentAdder interface {
+// PaymentUsecase abstracts payment operations for the bot.
+type PaymentUsecase interface {
 	AddPayment(ctx context.Context, userID int64, at time.Time, amount int64, note string, payoutType domain.PaymentType) error
-}
-
-type AddDeps struct {
-	Identities IdentityStore
-	Income     IncomeAdder
-	Payment    PaymentAdder
-	Now        func() time.Time
-}
-
-type QuarterSummer interface {
-	// returns (sum, tax, qStart, qEnd)
-	SumQuarter(ctx context.Context, userID int64, now time.Time) (int64, int64, time.Time, time.Time, error)
-}
-
-type TotalDeps struct {
-	Identities IdentityStore
-	QuarterSum QuarterSummer
-	Now        func() time.Time // optional; если nil — использовать time.Now
-}
-
-type undoerPayment interface {
 	UndoLastYear(ctx context.Context, userID int64, now time.Time, paymentType domain.PaymentType) (amount int64, at time.Time, note string, pType domain.PaymentType, ok bool, err error)
 }
 
-type undoerIncome interface {
-	UndoLastQuarter(ctx context.Context, userID int64, now time.Time) (amount int64, at time.Time, note string, ok bool, err error)
+// TotalUsecase provides totals for quarter and year-to-date.
+type TotalUsecase interface {
+	SumQuarter(ctx context.Context, userID int64, now time.Time) (domain.Totals, error)
+	SumYearToDate(ctx context.Context, userID int64, now time.Time) (domain.Totals, error)
+}
+
+// BotDeps contains all dependencies for the bot.
+type BotDeps struct {
+	Identities IdentityStore
+	Income     IncomeUsecase
+	Payment    PaymentUsecase
+	Total      TotalUsecase
+	// Now returns current time; if nil, time.Now is used.
+	Now func() time.Time
+}
+
+// NewBotDeps wires dependencies for the bot.
+// If now is nil, time.Now will be used.
+func NewBotDeps(identities IdentityStore, income IncomeUsecase, payment PaymentUsecase, total TotalUsecase, now func() time.Time) *BotDeps {
+	if now == nil {
+		now = time.Now
+	}
+	return &BotDeps{
+		Identities: identities,
+		Income:     income,
+		Payment:    payment,
+		Total:      total,
+		Now:        now,
+	}
 }

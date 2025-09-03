@@ -5,16 +5,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tuor4eg/ip_accounting_bot/internal/period"
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-func HandleTotal(ctx context.Context, deps TotalDeps, transport, externalID, args string) (string, error) {
+func HandleTotal(ctx context.Context, deps *BotDeps, transport, externalID, args string) (string, error) {
 	const op = "bot.HandleTotal"
 
 	// TODO: parse args
 	_ = strings.TrimSpace(args)
 
-	userID, err := deps.Identities.UpsertIdentity(ctx, transport, externalID)
+	userID, err := deps.Identities.UpsertIdentity(ctx, transport, externalID, 0)
 
 	if err != nil {
 		return "", validate.Wrap(op, err)
@@ -28,11 +29,29 @@ func HandleTotal(ctx context.Context, deps TotalDeps, transport, externalID, arg
 
 	nowUTC := now().UTC()
 
-	sum, tax, qStart, qEnd, err := deps.QuarterSum.SumQuarter(ctx, userID, nowUTC)
+	year, quarter := period.QuarterOf(nowUTC)
+
+	QuarterTotals, err := deps.Total.SumQuarter(ctx, userID, nowUTC)
 
 	if err != nil {
 		return "", validate.Wrap(op, err)
 	}
 
-	return TotalText(sum, tax, qStart, qEnd), nil
+	YearToDateTotals, err := deps.Total.SumYearToDate(ctx, userID, nowUTC)
+
+	if err != nil {
+		return "", validate.Wrap(op, err)
+	}
+
+	return TotalText(
+		QuarterTotals.IncomeSum,
+		QuarterTotals.Tax,
+		QuarterTotals.From,
+		QuarterTotals.To,
+		YearToDateTotals.IncomeSum,
+		YearToDateTotals.Tax,
+		YearToDateTotals.ContribSum,
+		YearToDateTotals.AdvanceSum,
+		year, quarter,
+	), nil
 }

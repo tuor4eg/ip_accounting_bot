@@ -8,11 +8,13 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/tuor4eg/ip_accounting_bot/internal/cryptostore"
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
 type Store struct {
-	Pool *pgxpool.Pool
+	cryptostore.BaseCryptoStore // Embed crypto capabilities
+	Pool                        *pgxpool.Pool
 }
 
 const (

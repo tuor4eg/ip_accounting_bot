@@ -21,3 +21,14 @@ func QuarterBounds(t time.Time) (start time.Time, end time.Time) {
 
 	return start, end
 }
+
+// QuarterOf returns the calendar year and quarter number (1..4) for the given moment.
+// The calculation uses UTC to match storage/date invariants.
+func QuarterOf(at time.Time) (year int, quarter int) {
+	at = at.UTC()
+
+	year = at.Year()
+	quarter = (int(at.Month())-1)/3 + 1
+
+	return year, quarter
+}

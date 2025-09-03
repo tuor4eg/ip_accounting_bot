@@ -38,3 +38,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - App first build
 - Error wrappers and validators
 - Advances and contribs
+- Total taxes with policies
+- Crypto for user PI keeping

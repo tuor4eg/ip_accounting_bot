@@ -15,6 +15,7 @@ type PaymentStore interface {
 	VoidLastPaymentInRange(ctx context.Context, userID int64, from, to, now time.Time, paymentType domain.PaymentType) (
 		amount int64, at time.Time, note string, pType domain.PaymentType, ok bool, err error,
 	)
+	SumPayments(ctx context.Context, userID int64, from, to time.Time) (int64, int64, error)
 }
 
 type PaymentService struct {
@@ -61,4 +62,24 @@ func (s *PaymentService) UndoLastYear(ctx context.Context, userID int64, now tim
 	}
 
 	return amount, at, note, pType, ok, nil
+}
+
+func (s *PaymentService) SumPayments(ctx context.Context, userID int64, from, to time.Time) (int64, int64, error) {
+	const op = "service.PaymentService.SumPayments"
+
+	if err := validate.ValidateUserID(userID); err != nil {
+		return 0, 0, validate.Wrap(op, err)
+	}
+
+	if err := validate.ValidateDateRangeUTC(from, to); err != nil {
+		return 0, 0, validate.Wrap(op, err)
+	}
+
+	sumContrib, sumAdvance, err := s.store.SumPayments(ctx, userID, from, to)
+
+	if err != nil {
+		return 0, 0, validate.Wrap(op, err)
+	}
+
+	return sumContrib, sumAdvance, nil
 }

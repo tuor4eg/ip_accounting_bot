@@ -7,7 +7,7 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-func HandleAdd(ctx context.Context, deps AddDeps, transport, externalID string, args string) (string, error) {
+func HandleAdd(ctx context.Context, deps *BotDeps, transport, externalID string, args string) (string, error) {
 	const op = "bot.HandleAdd"
 
 	amount, note, err := ParseAmountAndNote(args)
@@ -21,7 +21,7 @@ func HandleAdd(ctx context.Context, deps AddDeps, transport, externalID string, 
 	}
 
 	// Resolve or create user identity.
-	userID, err := deps.Identities.UpsertIdentity(ctx, transport, externalID)
+	userID, err := deps.Identities.UpsertIdentity(ctx, transport, externalID, 0)
 
 	if err != nil {
 		return "", validate.Wrap(op, err)

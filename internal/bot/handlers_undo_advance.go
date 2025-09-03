@@ -9,12 +9,12 @@ import (
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
 
-func HandleUndoAdvance(ctx context.Context, deps AddDeps, transport, externalID string, args string) (string, error) {
+func HandleUndoAdvance(ctx context.Context, deps *BotDeps, transport, externalID string, args string) (string, error) {
 	const op = "bot.HandleUndoAdvance"
 
 	_ = strings.TrimSpace(args) // args
 
-	userID, err := deps.Identities.UpsertIdentity(ctx, transport, externalID)
+	userID, err := deps.Identities.UpsertIdentity(ctx, transport, externalID, 0)
 
 	if err != nil {
 		return "", validate.Wrap(op, err)
@@ -28,13 +28,7 @@ func HandleUndoAdvance(ctx context.Context, deps AddDeps, transport, externalID 
 
 	nowUTC := now().UTC()
 
-	u, ok := deps.Payment.(undoerPayment)
-
-	if !ok {
-		return "", validate.Wrap(op, ErrServiceDoesNotSupportUndo)
-	}
-
-	amount, at, note, _, ok, err := u.UndoLastYear(ctx, userID, nowUTC, domain.PaymentTypeAdvance)
+	amount, at, note, _, ok, err := deps.Payment.UndoLastYear(ctx, userID, nowUTC, domain.PaymentTypeAdvance)
 
 	if err != nil {
 		return "", validate.Wrap(op, err)

@@ -20,10 +20,9 @@ const (
 )
 
 type TelegramRunner struct {
-	tg        *telegram.Client
-	log       *slog.Logger
-	addDeps   bot.AddDeps
-	totalDeps bot.TotalDeps
+	tg      *telegram.Client
+	log     *slog.Logger
+	botDeps *bot.BotDeps
 }
 
 func NewTelegramRunner(tg *telegram.Client) *TelegramRunner {
@@ -32,7 +31,7 @@ func NewTelegramRunner(tg *telegram.Client) *TelegramRunner {
 		log: logging.WithPackage(),
 	}
 
-	return tgRunner.SetBotDeps(bot.AddDeps{}, bot.TotalDeps{})
+	return tgRunner
 }
 
 func (r *TelegramRunner) Name() string {
@@ -40,9 +39,8 @@ func (r *TelegramRunner) Name() string {
 }
 
 // SetBotDeps injects bot dependencies into the TelegramRunner and returns the runner for chaining.
-func (r *TelegramRunner) SetBotDeps(add bot.AddDeps, total bot.TotalDeps) *TelegramRunner {
-	r.addDeps = add
-	r.totalDeps = total
+func (r *TelegramRunner) SetBotDeps(deps *bot.BotDeps) *TelegramRunner {
+	r.botDeps = deps
 
 	return r
 }
@@ -52,8 +50,9 @@ func (r *TelegramRunner) SendMessage(ctx context.Context, chatID int64, text str
 	defer cancel()
 
 	_, err := r.tg.SendMessage(sentCtx, telegram.SendMessageParams{
-		ChatID: chatID,
-		Text:   text,
+		ChatID:    chatID,
+		Text:      text,
+		ParseMode: "HTML",
 	})
 
 	return err
@@ -110,7 +109,7 @@ func (r *TelegramRunner) Run(ctx context.Context) error {
 		}
 
 		for _, u := range updates {
-			if err := HandleTelegramUpdate(ctx, self, u, r, r.addDeps, r.totalDeps); err != nil {
+			if err := HandleTelegramUpdate(ctx, self, u, r, r.botDeps); err != nil {
 				r.log.Error("handle telegram update", "code", codeTGHandleUpdateFailed, "error", err)
 			}
 

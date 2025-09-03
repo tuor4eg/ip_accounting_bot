@@ -21,6 +21,7 @@ var (
 	ErrInvalidExternalID  = errors.New("invalid external ID")
 	ErrInvalidDate        = errors.New("invalid date")
 	ErrEmptyString        = errors.New("empty string")
+	ErrNotFound           = errors.New("not found")
 )
 
 func IsUTC(t time.Time) bool { _, off := t.Zone(); return off == 0 }

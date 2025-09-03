@@ -70,6 +70,26 @@ func (s *IncomeService) UndoLastQuarter(ctx context.Context, userID int64, now t
 	return amount, at, note, ok, nil
 }
 
+func (s *IncomeService) SumIncomes(ctx context.Context, userID int64, from, to time.Time) (int64, error) {
+	const op = "service.IncomeService.SumIncomes"
+
+	if err := validate.ValidateUserID(userID); err != nil {
+		return 0, validate.Wrap(op, err)
+	}
+
+	if err := validate.ValidateDateRangeUTC(from, to); err != nil {
+		return 0, validate.Wrap(op, err)
+	}
+
+	sum, err := s.store.SumIncomes(ctx, userID, from, to)
+
+	if err != nil {
+		return 0, validate.Wrap(op, err)
+	}
+
+	return sum, nil
+}
+
 // SumQuarter returns total income and 6% tax for the current quarter.
 // All amounts are int64 minor units (kopecks). No floats.
 // Tax is computed with floor division for determinism.
