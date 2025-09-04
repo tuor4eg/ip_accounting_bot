@@ -3,8 +3,8 @@ package app
 import (
 	"log/slog"
 
+	"github.com/tuor4eg/ip_accounting_bot/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
-	"github.com/tuor4eg/ip_accounting_bot/internal/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/domain"
 	"github.com/tuor4eg/ip_accounting_bot/internal/telegram"
 )

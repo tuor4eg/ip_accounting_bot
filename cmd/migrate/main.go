@@ -10,9 +10,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/tuor4eg/ip_accounting_bot/internal/config"
+	"github.com/tuor4eg/ip_accounting_bot/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
-	"github.com/tuor4eg/ip_accounting_bot/internal/migrations"
+	"github.com/tuor4eg/ip_accounting_bot/migrations"
 )
 
 func main() {

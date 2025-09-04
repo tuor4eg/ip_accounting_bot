@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/tuor4eg/ip_accounting_bot/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
-	"github.com/tuor4eg/ip_accounting_bot/internal/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )

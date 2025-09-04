@@ -139,13 +139,26 @@ make run-bot
 ```
 ip_accounting_bot/
 ├── bin/                                     # Compiled binaries
-│   ├── ip_bot                              # Bot binary
+│   ├── ip_bot                               # Bot binary
 │   └── migrate                              # Migration binary
 ├── cmd/
 │   ├── bot/
 │   │   └── main.go                           # Bot application entry point
 │   └── migrate/
 │       └── main.go                           # Database migration entry point
+├── config/                                  # Application configuration
+│   ├── config.go                            # Configuration loading from environment
+│   ├── errors.go                            # Configuration error definitions
+│   └── types.go                             # Configuration type definitions
+├── migrations/                              # Database migrations
+│   ├── embed.go                             # SQL migrations embedding
+│   ├── errors.go                            # Migration error definitions
+│   ├── lock.go                              # Database migration locking mechanism
+│   ├── lock_errors.go                       # Lock mechanism error definitions
+│   ├── runner.go                            # Migration execution logic
+│   ├── types.go                             # Migration type definitions
+│   └── sql/
+│       └── 0001_init.up.sql                 # Initial database schema
 ├── internal/
 │   ├── app/
 │   │   ├── app.go                           # Main application logic and runner management
@@ -177,10 +190,6 @@ ip_accounting_bot/
 │   │   ├── types.go                         # Bot type definitions and interfaces
 │   │   ├── validate.go                      # Bot-specific validation
 │   │   └── router_dispatch.go               # Message routing and dispatch logic
-│   ├── config/
-│   │   ├── config.go                        # Configuration loading from environment
-│   │   ├── errors.go                        # Configuration error definitions
-│   │   └── types.go                         # Configuration type definitions
 │   ├── crypto/
 │   │   ├── crypto.go                        # Cryptographic utilities and functions
 │   │   ├── errors.go                        # Cryptographic error definitions
@@ -199,15 +208,6 @@ ip_accounting_bot/
 │   ├── logging/
 │   │   ├── logging.go                       # Logging configuration and setup
 │   │   └── pkglogging.go                    # Package-level logging utilities
-│   ├── migrations/
-│   │   ├── embed.go                         # SQL migrations embedding
-│   │   ├── errors.go                        # Migration error definitions
-│   │   ├── lock.go                          # Database migration locking mechanism
-│   │   ├── lock_errors.go                   # Lock mechanism error definitions
-│   │   ├── runner.go                        # Migration execution logic
-│   │   ├── types.go                         # Migration type definitions
-│   │   └── sql/
-│   │       └── 0001_init.up.sql             # Initial database schema
 │   ├── money/
 │   │   ├── errors.go                        # Money error definitions
 │   │   ├── format.go                        # Money formatting utilities
@@ -307,26 +307,28 @@ ip_accounting_bot/
 - **`internal/bot/types.go`** - Bot type definitions, interfaces and dependency structures
 - **`internal/bot/validate.go`** - Bot-specific validation functions
 
-#### Configuration & Domain
-- **`internal/config/config.go`** - Configuration loading from environment variables with .env file support
-- **`internal/config/errors.go`** - Configuration error definitions and error handling
-- **`internal/config/types.go`** - Configuration type definitions and structures
+#### Configuration
+- **`config/config.go`** - Configuration loading from environment variables with .env file support
+- **`config/errors.go`** - Configuration error definitions and error handling
+- **`config/types.go`** - Configuration type definitions and structures
+
+#### Database Migrations
+- **`migrations/embed.go`** - SQL migrations embedding for Go binary
+- **`migrations/errors.go`** - Migration error definitions and error handling
+- **`migrations/lock.go`** - Database migration locking mechanism to prevent concurrent migrations
+- **`migrations/lock_errors.go`** - Lock mechanism error definitions and error handling
+- **`migrations/runner.go`** - Migration execution logic and version management
+- **`migrations/types.go`** - Migration type definitions and structures
+- **`migrations/sql/0001_init.up.sql`** - Initial database schema creation
+
+#### Domain
 - **`internal/domain/const.go`** - Domain constants and business logic definitions
-- **`internal/domain/totals.go`** - Domain totals and aggregates logic for calculations
+- **`internal/domain/interfaces.go`** - Domain interface definitions
 - **`internal/domain/types.go`** - Domain type definitions and structures
 
 #### Logging
 - **`internal/logging/logging.go`** - Logging configuration and setup
 - **`internal/logging/pkglogging.go`** - Package-level logging utilities
-
-#### Database & Migrations
-- **`internal/migrations/embed.go`** - SQL migrations embedding for Go binary
-- **`internal/migrations/errors.go`** - Migration error definitions and error handling
-- **`internal/migrations/lock.go`** - Database migration locking mechanism to prevent concurrent migrations
-- **`internal/migrations/lock_errors.go`** - Lock mechanism error definitions and error handling
-- **`internal/migrations/runner.go`** - Migration execution logic and version management
-- **`internal/migrations/types.go`** - Migration type definitions and structures
-- **`internal/migrations/sql/0001_init.up.sql`** - Initial database schema creation
 
 #### Business Logic
 - **`internal/money/errors.go`** - Money error definitions and error handling

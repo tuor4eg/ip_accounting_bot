@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/tuor4eg/ip_accounting_bot/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/app"
-	"github.com/tuor4eg/ip_accounting_bot/internal/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 	"github.com/tuor4eg/ip_accounting_bot/internal/service"
 	"github.com/tuor4eg/ip_accounting_bot/internal/storage/postgres"
