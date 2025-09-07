@@ -6,8 +6,8 @@ import (
 
 	"github.com/tuor4eg/ip_accounting_bot/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
-	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
+	"github.com/tuor4eg/ip_accounting_bot/pkg/logging"
 )
 
 func New(cfg *config.Config) *App {

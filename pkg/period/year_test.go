@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tuor4eg/ip_accounting_bot/internal/period"
+	"github.com/tuor4eg/ip_accounting_bot/pkg/period"
 )
 
 // Test year bounds functionality

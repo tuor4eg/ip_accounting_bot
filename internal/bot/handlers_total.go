@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tuor4eg/ip_accounting_bot/internal/period"
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
+	"github.com/tuor4eg/ip_accounting_bot/pkg/period"
 )
 
 func HandleTotal(ctx context.Context, deps *BotDeps, transport, externalID, args string) (string, error) {

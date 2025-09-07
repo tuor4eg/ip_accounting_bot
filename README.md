@@ -159,6 +159,15 @@ ip_accounting_bot/
 │   ├── types.go                             # Migration type definitions
 │   └── sql/
 │       └── 0001_init.up.sql                 # Initial database schema
+├── pkg/                                     # Public utility packages
+│   ├── logging/
+│   │   ├── logging.go                        # Logging configuration and setup
+│   │   └── pkglogging.go                     # Package-level logging utilities
+│   └── period/
+│       ├── quarter.go                        # Quarter period calculations
+│       ├── quarter_test.go                   # Quarter period tests
+│       ├── year.go                           # Year period calculations
+│       └── year_test.go                      # Year period tests
 ├── internal/
 │   ├── app/
 │   │   ├── app.go                           # Main application logic and runner management
@@ -205,20 +214,12 @@ ip_accounting_bot/
 │   │   ├── interfaces.go                    # Domain interface definitions
 │   │   ├── totals.go                        # Domain totals and aggregates logic
 │   │   └── types.go                         # Domain type definitions
-│   ├── logging/
-│   │   ├── logging.go                       # Logging configuration and setup
-│   │   └── pkglogging.go                    # Package-level logging utilities
 │   ├── money/
 │   │   ├── errors.go                        # Money error definitions
 │   │   ├── format.go                        # Money formatting utilities
 │   │   ├── format_test.go                   # Money formatting tests
 │   │   ├── parse.go                         # Money parsing utilities
 │   │   └── parse_test.go                    # Money parsing tests
-│   ├── period/
-│   │   ├── quarter.go                       # Quarter period calculations
-│   │   ├── quarter_test.go                  # Quarter period tests
-│   │   ├── year.go                          # Year period calculations
-│   │   └── year_test.go                     # Year period tests
 │   ├── service/
 │   │   ├── income.go                        # Income business logic service
 │   │   ├── interfaces.go                    # Service interface definitions
@@ -326,9 +327,13 @@ ip_accounting_bot/
 - **`internal/domain/interfaces.go`** - Domain interface definitions
 - **`internal/domain/types.go`** - Domain type definitions and structures
 
-#### Logging
-- **`internal/logging/logging.go`** - Logging configuration and setup
-- **`internal/logging/pkglogging.go`** - Package-level logging utilities
+#### Public Utility Packages
+- **`pkg/logging/logging.go`** - Logging configuration and setup
+- **`pkg/logging/pkglogging.go`** - Package-level logging utilities
+- **`pkg/period/quarter.go`** - Quarter period calculations and date utilities
+- **`pkg/period/quarter_test.go`** - Tests for quarter period calculations
+- **`pkg/period/year.go`** - Year period calculations and date utilities
+- **`pkg/period/year_test.go`** - Tests for year period calculations
 
 #### Business Logic
 - **`internal/money/errors.go`** - Money error definitions and error handling
@@ -336,10 +341,6 @@ ip_accounting_bot/
 - **`internal/money/format_test.go`** - Tests for money formatting utilities
 - **`internal/money/parse.go`** - Money parsing utilities for handling currency amounts
 - **`internal/money/parse_test.go`** - Tests for money parsing utilities
-- **`internal/period/quarter.go`** - Quarter period calculations and date utilities
-- **`internal/period/quarter_test.go`** - Tests for quarter period calculations
-- **`internal/period/year.go`** - Year period calculations and date utilities
-- **`internal/period/year_test.go`** - Tests for year period calculations
 - **`internal/service/income.go`** - Income business logic service layer
 - **`internal/service/payment.go`** - Payment business logic service layer
 - **`internal/service/total.go`** - Total calculation and aggregation service

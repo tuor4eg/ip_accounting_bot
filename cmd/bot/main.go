@@ -9,11 +9,11 @@ import (
 
 	"github.com/tuor4eg/ip_accounting_bot/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/app"
-	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 	"github.com/tuor4eg/ip_accounting_bot/internal/service"
 	"github.com/tuor4eg/ip_accounting_bot/internal/storage/postgres"
 	"github.com/tuor4eg/ip_accounting_bot/internal/tax"
 	"github.com/tuor4eg/ip_accounting_bot/internal/telegram"
+	"github.com/tuor4eg/ip_accounting_bot/pkg/logging"
 )
 
 func main() {

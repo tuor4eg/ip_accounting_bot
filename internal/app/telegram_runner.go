@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/bot"
-	"github.com/tuor4eg/ip_accounting_bot/internal/logging"
 	"github.com/tuor4eg/ip_accounting_bot/internal/telegram"
+	"github.com/tuor4eg/ip_accounting_bot/pkg/logging"
 )
 
 const (
