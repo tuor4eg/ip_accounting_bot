@@ -9,6 +9,7 @@ import (
 
 	"github.com/tuor4eg/ip_accounting_bot/config"
 	"github.com/tuor4eg/ip_accounting_bot/internal/app"
+	telegramrunner "github.com/tuor4eg/ip_accounting_bot/internal/runner/telegram_runner"
 	"github.com/tuor4eg/ip_accounting_bot/internal/service"
 	"github.com/tuor4eg/ip_accounting_bot/internal/storage/postgres"
 	"github.com/tuor4eg/ip_accounting_bot/internal/tax"
@@ -72,7 +73,7 @@ func main() {
 		log.Fatalf("app: bot deps error: %v", err)
 	}
 
-	a.Register(app.NewTelegramRunner(tg).SetBotDeps(botDeps))
+	a.Register(telegramrunner.NewRunner(tg).SetBotDeps(botDeps))
 
 	if err := a.Run(ctx); err != nil {
 		log.Fatalf("app: run error: %v", err)

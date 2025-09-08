@@ -172,14 +172,20 @@ ip_accounting_bot/
 │   ├── app/
 │   │   ├── app.go                           # Main application logic and runner management
 │   │   ├── errors.go                        # Application error definitions
-│   │   ├── handle_telegram_update.go        # Telegram update processing logic
 │   │   ├── interfaces.go                    # Application interface definitions
-│   │   ├── run_telegram_polling.go          # Telegram polling implementation
 │   │   ├── runner.go                        # Runner interface and concurrent execution
 │   │   ├── service.go                       # Service layer interface and implementation
 │   │   ├── store.go                         # Storage layer interface and implementation
-│   │   ├── telegram_runner.go               # Telegram bot runner implementation
 │   │   └── types.go                         # Application type definitions
+│   ├── runner/
+│   │   ├── interfaces.go                    # Common runner interfaces for all transports
+│   │   ├── types.go                         # Common runner types
+│   │   └── telegram_runner/
+│   │       ├── interfaces.go                # Telegram-specific interfaces
+│   │       ├── types.go                     # Telegram-specific types
+│   │       ├── polling.go                   # Telegram polling implementation
+│   │       ├── handler.go                   # Telegram update processing logic
+│   │       └── runner.go                    # Telegram bot runner implementation
 │   ├── bot/
 │   │   ├── deps.go                          # Bot dependencies and initialization
 │   │   ├── errors.go                        # Bot error handling and custom errors
@@ -281,13 +287,20 @@ ip_accounting_bot/
 #### Application Core
 - **`internal/app/app.go`** - Main application logic, manages registration and execution of various components (runners)
 - **`internal/app/errors.go`** - Application error definitions and error handling
-- **`internal/app/handle_telegram_update.go`** - Telegram update processing logic and message handling
-- **`internal/app/run_telegram_polling.go`** - Telegram polling implementation for receiving updates
+- **`internal/app/interfaces.go`** - Application interface definitions (Store, Runner)
 - **`internal/app/runner.go`** - Runner interface and function for concurrent execution of all registered components
 - **`internal/app/service.go`** - Service layer interface and implementation for business logic
 - **`internal/app/store.go`** - Storage layer interface and implementation for data persistence
-- **`internal/app/telegram_runner.go`** - Telegram bot implementation, processes incoming messages and sends responses
 - **`internal/app/types.go`** - Application type definitions and structures
+
+#### Transport Runners
+- **`internal/runner/interfaces.go`** - Common runner interfaces for all transport implementations
+- **`internal/runner/types.go`** - Common runner types and structures
+- **`internal/runner/telegram_runner/interfaces.go`** - Telegram-specific interfaces (TelegramUpdateGetter, TelegramSender)
+- **`internal/runner/telegram_runner/types.go`** - Telegram-specific types and structures
+- **`internal/runner/telegram_runner/polling.go`** - Telegram polling implementation for receiving updates
+- **`internal/runner/telegram_runner/handler.go`** - Telegram update processing logic and message handling
+- **`internal/runner/telegram_runner/runner.go`** - Telegram bot runner implementation, processes incoming messages and sends responses
 
 #### Bot Handlers
 - **`internal/bot/deps.go`** - Bot dependencies and initialization logic
