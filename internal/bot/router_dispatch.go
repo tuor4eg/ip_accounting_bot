@@ -2,7 +2,6 @@ package bot
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/tuor4eg/ip_accounting_bot/internal/validate"
 )
@@ -49,7 +48,6 @@ func DispatchCommand(
 	case "undo_contrib":
 		reply, err := HandleUndoContrib(ctx, deps, transport, externalID, args)
 		if err != nil {
-			fmt.Println("error in undo_contrib", err)
 			return "", true, validate.Wrap(op, err)
 		}
 		return reply, true, nil
